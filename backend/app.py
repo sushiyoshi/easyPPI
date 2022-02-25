@@ -77,32 +77,21 @@ def file_mode():
     except Exception as e:
         error_text = error_obj(1,str(e))
         return make_response(jsonify(error_text))
+@app.route("/deeper_mode",methods=['POST'])
+def deeper_mode():
+    try:
+    #アップロードしたjsonファイルからグラフを生成する場合は、POST
+        if request.method == 'POST':
+            #protein_name = request.form.get("protein_name")
+            req = request.get_json()
+            elem = req['file']
+            protein_id = req['protein_id']
+            re = xml_to_json.xmlTojson_deep(elem,protein_id)
+            print(re)
+            return make_response(jsonify({"elem":re,"state":0}))
+    except Exception as e:
+        error_text = error_obj(1,str(e))
+        return make_response(jsonify(error_text))
 
-
-# @app.route('/download',methods=['POST'])
-# def donwload():
-#     #print(request.headers)
-#     #print(request.get_json())
-#     #print(request.get_data())
-#     #print(request.get_json())
-#     #print(type(request.get_data()))
-#     #return "Success"
-#     try:
-#         if request.method == 'POST':
-#             file = request.get_json()
-#             if file:
-#                 file = json.dumps(file)
-#                 #ファイルをサーバ内に残さないために、インメモリでjsonファイルの内容を展開
-#                 mem = io.BytesIO()
-#                 mem.write( file.encode('utf-8'))
-#                 mem.seek(0)
-#                 #ユーザーに処理したjsonファイルを送信する
-#                 fileid = str(uuid.uuid4())[-6:]
-#                 filename = fileid + '.json'
-#                 return send_file( mem, mimetype='application/json', as_attachment=True, attachment_filename=filename,)
-#             else:
-#                 return 'This file may have been invalidated because the timeout period has elapsed.'
-#     except Exception as e:
-#         return str(e)
 if __name__ == "__main__":
     app.run(debug=True)
