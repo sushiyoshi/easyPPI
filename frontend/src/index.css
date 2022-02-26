@@ -27,5 +27,11 @@ code {
   transition-duration: 250ms;
   transition-timing-function: ease-out;
   overflow: auto;
-  z-index: 0;
+  z-index: 1;
+}
+.center{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translateY(-50%) translateX(-50%);
 }

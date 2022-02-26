@@ -8,7 +8,6 @@ import { saveAs } from "file-saver";
 import ReactLoading from 'react-loading';
 import { BsCloudDownload ,BsCloudUpload,BsFillLayersFill,BsClipboardMinus,BsClipboardCheck} from 'react-icons/bs';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import './App.css';
 import {blue, cyan, deepPurple, green, orange, red} from "@mui/material/colors";
 import Cytoscape from 'cytoscape';
 import COSEBilkent from 'cytoscape-cose-bilkent';
@@ -97,7 +96,6 @@ const MyLoading = props => {
           //color="#fff"
           height="100px"
           width="100px"
-          className="loading"
         />
         <div style={{fontWeight: 'bold',color:"#FF9900",textAlign:"center"}}>Loading..</div>.
 
