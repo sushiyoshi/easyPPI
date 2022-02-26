@@ -1,18 +1,20 @@
-import React,{useState} from 'react';
+import React,{useState,useRef,useCallback,useEffect} from 'react';
 import CytoscapeComponent from 'react-cytoscapejs';
 import Axios from 'axios';
 import { BrowserRouter as Router, Routes,Route,useNavigate,useLocation,Link } from 'react-router-dom';
-import { useForm } from 'react-hook-form'
-import { Button, Container, Stack, TextField ,styled,Grid,Paper,Box} from '@mui/material'
+import { useForm} from 'react-hook-form'
+import { Button, IconButton,Container, Stack, TextField ,styled,Grid,Paper,Box} from '@mui/material'
 import { saveAs } from "file-saver";
 import ReactLoading from 'react-loading';
-import { BsCloudDownload ,BsCloudUpload,BsFillLayersFill} from 'react-icons/bs';
-import {Gi3DStairs} from 'react-icons/gi';
+import { BsCloudDownload ,BsCloudUpload,BsFillLayersFill,BsClipboardMinus,BsClipboardCheck} from 'react-icons/bs';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import './App.css';
 import {blue, cyan, deepPurple, green, orange, red} from "@mui/material/colors";
 import Cytoscape from 'cytoscape';
 import COSEBilkent from 'cytoscape-cose-bilkent';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
 Cytoscape.use(COSEBilkent);
 
 //import './TopPage.js'
@@ -26,6 +28,11 @@ const darkTheme = createTheme({
     primary: orange,
     secondary: cyan,
   },
+  typography: {
+    button: {
+        textTransform: "none",
+    }
+  }
 });
 
 const Input = styled('input')({
@@ -87,11 +94,12 @@ const MyLoading = props => {
         <ReactLoading
           type="bars"
           color="#FF9900"
+          //color="#fff"
           height="100px"
           width="100px"
           className="loading"
         />
-        {/* <p className="text-center">Loading...</p> */}
+        <div style={{fontWeight: 'bold',color:"#FF9900",textAlign:"center"}}>Loading..</div>.
 
       </div>
     </Container>
@@ -295,13 +303,20 @@ const FileInputForm = props => {
 }
 
 const GraphPage = () => {
+  //const pageID = Math.random();
+  //onsole.log(pageID)
   const { state } = useLocation();
   const [isLoading,setLoading] = useState(false);
+  const [nodeNum,setNodeNum] = useState(0);
+  const [isNumberLoading,setNumberLoading] = useState(false);
   //console.log(useLocation())
   const [proteinInfo,setProteinInfo] = useState(null);
+  //console.log(proteinInfo)
+  const [copyFlag,setCopyFlag] = useState(false);
   const elements = JSON.parse(state.elements)
   const protein_name = elements[1].data.name
   const navigate = useNavigate();
+
   const handleSendFile = () => {
     //const params = new FormData();
     //params.append('file', state.element);
@@ -340,8 +355,25 @@ const GraphPage = () => {
     saveAs(blob, filename);
   }
   const handleNodeClick = obj => {
+    setNumberLoading(true)
     setProteinInfo(obj)
-    //console.log(proteinInfo)
+    setCopyFlag(false)
+    Axios.get('http://127.0.0.1:5000/getLength',{
+    params:{
+      target:obj.id,
+    }})
+    .then((response) => {
+      setNumberLoading(false)
+      //console.log(response)
+      if(response.data.state == 0) {
+        setNodeNum(Number(response.data.elem))
+      }else {
+        console.log(response.data.elem);
+      }
+    });
+  }
+  const handleCopy = () => {
+    setCopyFlag(true)
   }
   const handleSendProtein = () => {
     
@@ -371,7 +403,17 @@ const GraphPage = () => {
   //<div>
   <ThemeProvider theme={darkTheme}>
     <GraphDrawing elements={elements} className="center" handleNodeClick={handleNodeClick}/>
-    <InformationWindow handleSendFile={handleSendFile} proteinInfo={proteinInfo} isLoading={isLoading}comp={elements[0].comp} handleSendProtein={handleSendProtein} />
+    <InformationWindow 
+      handleSendFile={handleSendFile}
+      proteinInfo={proteinInfo}
+      isLoading={isLoading}
+      comp={elements[0].comp}
+      handleSendProtein={handleSendProtein}
+      handleCopy={handleCopy}
+      copyFlag={copyFlag}
+      nodeNum={nodeNum}
+      isNumberLoading={isNumberLoading}
+    />
     {isLoading && <BlackOut />}
     {isLoading && <MyLoading />}
   </ThemeProvider>
@@ -389,7 +431,8 @@ const commonStyles = {
 const InformationWindow = props => {
   //console.log(props.proteinInfo)
   //console.log(props.elements)
-  let flag = props.proteinInfo!=null;
+  const flag = props.proteinInfo!=null;
+  const proteinURL =flag ? "https://www.uniprot.org/uniprot/" + props.proteinInfo.id :  'null'
   return(
     <div className="config">
       <Container>
@@ -399,18 +442,53 @@ const InformationWindow = props => {
         </Button>
         <Box sx={{ ...commonStyles, borderRadius: 1 }}>
           
-          <Stack>
+          {/* <Stack>
           <p>Protein Name</p>
           <p>{flag ? props.proteinInfo.name :  'null'}</p>
           <p>Protein ID</p>
           <p>{flag ? props.proteinInfo.id :  'null'}</p>
           
-          </Stack>
+          </Stack> */}
+          <List>
+            <ListItem>
+            <div style={{fontWeight: 'bold',color:"#C83C0B"}}>Name</div>
+            </ListItem>
+            <ListItem>
+            {flag ? props.proteinInfo.name :  'null'}
+            </ListItem>
+            <ListItem>
+            <div style={{fontWeight: 'bold',color:"#C83C0B"}}>ID</div>
+            </ListItem>
+            <ListItem>
+            {flag ? props.proteinInfo.id :  'null'}
+            </ListItem>
+            <ListItem>
+            <div style={{fontWeight: 'bold',color:"#C83C0B"}}>Number of nodes</div>
+            </ListItem>
+            <ListItem>
+            {props.isNumberLoading ? <ReactLoading  type="spin" color="#FFF" height="20px" width="20px"/> : props.nodeNum}
+            </ListItem>
+            <ListItem>
+            <div style={{fontWeight: 'bold',color:"#C83C0B"}}>Uniprot Link</div>
+            </ListItem>
+            <ListItem>
+              <TextField disabled="true" value={proteinURL}/>
+              <CopyToClipboard
+                text= {proteinURL}
+                color="secondary"
+                onCopy={props.handleCopy}
+              >
+              <IconButton>{props.copyFlag ? <BsClipboardCheck color="secondary"/>: <BsClipboardMinus color="#FF9900"/>}</IconButton>
+              </CopyToClipboard>
+            </ListItem>
+            <List>
+            </List>
+          </List>
         </Box>
         {
           props.proteinInfo!=null && props.comp[props.proteinInfo.name][0] == 1 &&
-          <Button variant="outlined" disabled={props.isLoading} startIcon={<BsFillLayersFill />} onClick={props.handleSendProtein}>
-          Go deeper from current {props.proteinInfo.name}
+          <Button variant="outlined" disabled={props.isLoading} color="secondary" startIcon={<BsFillLayersFill />} onClick={props.handleSendProtein}>
+          <p>Go deeper from current <span style={{fontWeight: 'bold'}}>{props.proteinInfo.name}</span></p>
           </Button>
         }
       </Stack>
@@ -418,9 +496,34 @@ const InformationWindow = props => {
     </div>
   )
 }
-
 const GraphDrawing = props => {
-  //console.log(props.elements)
+  // cleanup cytoscape listeners on unmount
+  const cyRef = useRef();
+  useEffect(() => {
+    return () => {
+      console.log(cyRef)
+      if (cyRef.current) {
+        cyRef.current.removeAllListeners();
+        cyRef.current = null;
+      }
+    };
+  }, []);
+  const cyCallback = useCallback(
+    cy => {
+      // this is called each render of the component, don't add more listeners
+      if (cyRef.current) return;
+
+      cyRef.current = cy;
+      cy.layout({
+        name: 'random'
+      })
+      cy.on('click','node',e => {
+        console.log("Click Event (1クリックにつき1メッセージ)")
+        props.handleNodeClick(e.target._private.data)
+      })
+    },
+    [],
+  );
   //const elements = JSON.parse(props.elements)
   const elements = props.elements
   const layout ={
@@ -441,12 +544,19 @@ const GraphDrawing = props => {
     coolingFactor: 0.95,
     minTemp: 1.0
   };
+  
   return <CytoscapeComponent
-    cy={(cy) => { 
-      cy.on('click','node',e => {
-        props.handleNodeClick(e.target._private.data)
-      })
-    }}
+    // cy={(cy) => { 
+    //   cy.layout({
+    //     name: 'random'
+    //   })
+      
+    //   cy.on('click','node',e => {
+    //     console.log("Click Event (1クリックにつき1メッセージ)")
+    //     props.handleNodeClick(e.target._private.data)
+    //   })
+    // }}
+    cy={cyCallback}
     elements={elements}
     style={{ 
       height: "100%",
@@ -487,16 +597,24 @@ const GraphDrawing = props => {
         'color': 'white',
     
         'background-color': '#ff9900',
-        'text-outline-color': '#ff9900',
         'width': '50px',
         'height': '50px',
         'font-size': '22px'
       }
     },
+    //  
     {
       selector:'.pydata',
       style: {
         'display': 'none'
+      }
+    },
+    {
+      selector:':selected',
+      style: {
+        'border-color': '#BD3333',
+        'border-width': 10,
+        'border-opacity': 0.5
       }
     }
   ]}

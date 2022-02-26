@@ -93,5 +93,18 @@ def deeper_mode():
         error_text = error_obj(1,str(e))
         return make_response(jsonify(error_text))
 
+@app.route("/getLength",methods=['GET'])
+def getLength():
+    try:
+        if request.method == 'GET':
+            #protein_name = request.form.get("protein_name")
+            #アクセッション番号
+            target = request.args.get('target', '')
+            re = xml_to_json.getNodeLength(target)
+            return make_response(jsonify({"elem":re,"state":0}))
+    except Exception as e:
+        error_text = error_obj(1,str(e))
+        return make_response(jsonify(error_text))
+
 if __name__ == "__main__":
     app.run(debug=True)
