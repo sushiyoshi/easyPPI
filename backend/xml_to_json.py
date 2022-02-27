@@ -8,8 +8,6 @@ import re
 import time
 import math
 
-
-radius = 200.0
 def getxmlRoot(target):
     #入力されたアクセッション番号から、起点となるxmlをuniprotから読み込む。
     query = 'https://www.uniprot.org/uniprot/'+ target + '.xml'
@@ -52,7 +50,7 @@ def xmlTojson_inp_json(json_file,depth):
     completion_dict = dict_[0]["comp"]
     print(completion_dict)
     #print(dict_[numarray[1]]['data']['name'])
-    
+    json_file[0]["end_num"] = ""
     for index in numarray:
 
         target = dict_[index]['data']['id']

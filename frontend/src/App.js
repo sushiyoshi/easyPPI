@@ -148,7 +148,7 @@ const BlackOut = () => {
   )
 }
 
-const bioList = []
+const bioList = ['HUMAN', 'PONPY', 'HYLLA', 'SAGFU', 'MACFA', 'MACMU', 'PANTR', 'HORSE', 'PIG', 'BOVIN', 'CANFA', 'URSAR', 'FELCA', 'PANTI', 'BALMU', 'KOGSI', 'CEPEU', 'ORCOR', 'RABIT', 'MOUSE', 'CRIGR', 'MESAU', 'MACGI', 'SARHA', 'PHACI', 'LACVV', 'PODMU', 'LACBL', 'IGUIG', 'TERCA', 'CHEMY', 'APAFE', 'ALLMI', 'ALLSI', 'CRONI', 'CAICR', 'BOACO', 'PYTSE', 'OPHHA', 'CHICK', 'CORBR', 'VIRLA', 'AQUCH', 'APTPA', 'EUDCH', 'XENLA', 'RANNI', 'RANSI', 'SALSA', 'SCOSC', 'CARAU', 'BRARE', 'CYPCA', 'ANGRO', 'LEPSP', 'PRIGL', 'PASSE', 'DROME', 'ANOQU', 'ARTSF', 'ORYSA', 'SOLTU', 'HORVU', 'MAIZE', 'PEA', 'PHYPA', 'LYCES', 'CUCSA', 'ARATH', 'SPIOL', 'YEAST', 'ECOLI', 'ECO57', 'SALTY', 'SALTI', 'VIBCH', 'HELPY', 'BACSU', 'ERWCT', 'HAES1']
 
 // const Option = map(bioList,()=>{
 
@@ -157,15 +157,28 @@ const bioList = []
 const From_ProteinID = () => {  
   const navigate = useNavigate();
   const [isLoading,setLoading] = useState(false);
+  const [proteinID,setProteinID] = useState(null)
+  const [depth,setDepth] = useState(0)
   const [optionList,setOption] = useState([
     false,false,false,false
   ])
+  const handleSetProteinID = e => {
+    const eID = e.target.value;
+    setProteinID(eID);
+  }
+  const handleSetDepth = e => {
+    const eDepth = e.target.value;
+    setDepth(eDepth);
+  }
+  const [ error, setError ] = useState(null);
   const onSubmit = (data) => {
     setLoading(true)
     Axios.get('http://127.0.0.1:5000/protein_id',{
     params:{
-      target:data.protein_id,
-      depth:data.depth,
+      // target:data.protein_id,
+      // depth:data.depth,
+      target:proteinID,
+      depth:depth,
     }})
     .then((response) => {
       setLoading(false)
@@ -173,6 +186,7 @@ const From_ProteinID = () => {
         navigate("/graph",{ state:{elements:response.data.elem} });
       }else {
         console.log(response.data.elem);
+        setError({data:response.data.elem})
       }
 
     });
@@ -200,7 +214,14 @@ const From_ProteinID = () => {
       >
       <ThemeProvider theme={darkTheme}>
       <div className="test">
-      <InputForms onSubmit={onSubmit} isLoading={isLoading}/>
+      <InputForms 
+        onSubmit={onSubmit}
+        isLoading={isLoading}
+        error={error}
+        handleSetProteinID={handleSetProteinID}
+        handleSetDepth={handleSetDepth}
+        flag={depth&&proteinID}
+      />
       </div>
       {isLoading && <BlackOut />}
       {isLoading && <MyLoading />}
@@ -211,37 +232,41 @@ const From_ProteinID = () => {
 }
 
 const InputForms= props => {
-  const { register, handleSubmit } = useForm();
+  
+  //console.log(props.error ? props.error.error_message:null)
   return (
-    
     <Container maxWidth="sm" sx={{pt:5}} className="center">
       <Stack spacing= {2}>
       <TextField 
+        error={props.error}
+        helperText={props.error ? props.error.data.error_message:null}
         disabled={props.isLoading}
         label="Protein ID"
         color="secondary"
         //id="outlined-basic"  
         //id="outlined-disabled"
-        {...register('protein_id')}
+        // {...register('protein_id')}
         variant="filled"
-        onChange
+        onChange={props.handleSetProteinID}
         InputLabelProps={{
           shrink: true,
         }}
       />
       <TextField
+          // error={props.error}
           disabled={props.isLoading}
           label="Depth"
           color="secondary"
-          {...register('depth')}
+          // {...register('depth')}
+          onChange={props.handleSetDepth}
           type="number"
           InputLabelProps={{
             shrink: true,
           }}
       />
       <Button 
-        disabled={props.isLoading}
-        onClick={handleSubmit(props.onSubmit)}
+        disabled={props.isLoading || !props.flag}
+        onClick={props.onSubmit}
         variant="contained"
       >Create a Graph</Button>
       </Stack>
@@ -251,6 +276,7 @@ const InputForms= props => {
 
 const From_JSONFILE = () => {  
   const [file,setFile] = useState(null);
+  const [ error, setError ] = useState(null);
   const [depth,setDepth] = useState(0);
   const [isLoading,setLoading] = useState(false);
   const navigate = useNavigate();
@@ -284,6 +310,7 @@ const From_JSONFILE = () => {
         navigate("/graph",{ state:{elements:response.data.elem} });
       }else {
         console.log(response.data.elem);
+        setError({data:response.data.elem})
       }
     });
   };
@@ -313,6 +340,8 @@ const From_JSONFILE = () => {
         handleDepth={handleDepth}
         onSubmit={onSubmit}
         isLoading={isLoading}
+        error={error}
+        flag={depth && file}
       />
       {isLoading && <BlackOut />}
       {isLoading && <MyLoading />}
@@ -350,7 +379,8 @@ const FileInputForm = props => {
             color="secondary"
             startIcon={<BsCloudUpload />}
             disabled={props.isLoading}
-
+            error={props.error}
+            helperText={props.error ? props.error.data.error_message:null}
             >
               Upload JSON
             </Button>
@@ -365,9 +395,11 @@ const FileInputForm = props => {
                 shrink: true,
               }}
               onChange={props.handleDepth}
+              error={props.error}
+            helperText={props.error ? props.error.data.error_message:null}
           />
           <Button 
-            disabled={props.isLoading}
+            disabled={props.isLoading || !props.flag}
             onClick={props.onSubmit}
             variant="contained"
           >Create a Graph</Button>
