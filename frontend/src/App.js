@@ -3,7 +3,7 @@ import CytoscapeComponent from 'react-cytoscapejs';
 import Axios from 'axios';
 import { BrowserRouter as Router, Routes,Route,useNavigate,useLocation,Link } from 'react-router-dom';
 import { useForm} from 'react-hook-form'
-import { Button, IconButton,Container, Stack, TextField ,styled,Grid,Paper,Box} from '@mui/material'
+import { Button, IconButton,Container, Stack, TextField ,styled,Box,Checkbox} from '@mui/material'
 import { saveAs } from "file-saver";
 import ReactLoading from 'react-loading';
 import { BsCloudDownload ,BsCloudUpload,BsFillLayersFill,BsClipboardMinus,BsClipboardCheck} from 'react-icons/bs';
@@ -14,6 +14,7 @@ import COSEBilkent from 'cytoscape-cose-bilkent';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
+import {motion ,AnimatePresence} from "framer-motion";
 Cytoscape.use(COSEBilkent);
 
 //import './TopPage.js'
@@ -38,25 +39,49 @@ const Input = styled('input')({
   display: 'none',
 });
 
-const MyApp = () =>{
+const MyApp = () => {
   return(
-    <div>
-      <Router>
-        <Routes>
-          <Route path="/" exact element={<TopPage />} />
+    <Router>
+      <Routing />
+    </Router>
+  )
+}
+
+const Routing = () =>{
+  const location = useLocation();
+  return(
+      <AnimatePresence exitBeforeEnter={false} initial={true}>
+        <Routes location={location} key={location.pathname}>
+          <Route path="/" exact element={<TopPage />}  />
           <Route path="/from_protein_id" element={<From_ProteinID />} />
           <Route path="/from_json_file" element={<From_JSONFILE />} />
           <Route path="/graph" element={<GraphPage />} />
         </Routes>
-      </Router>
-    </div>
+      </AnimatePresence>
   );
 }
 const TopPage = () => {
+  const [isVisible, setIsVisible] = useState(false);
   return(
     <div className="center">
     {/* <ThemeContext.Provider value="dark"> */}
     <ThemeProvider theme={darkTheme}>
+      <motion.div
+        animate={{
+          y: 0,
+          opacity: 1
+        }}
+        initial={{
+          y: 50,
+          opacity: 0
+        }}
+        exit={{
+          opacity: 0
+        }}
+        transition={{
+          duration: 1.0
+        }}
+      >
       <Stack spacing={15}>
         <h1>
           easy<span className="orangeText">PPI</span>
@@ -75,13 +100,16 @@ const TopPage = () => {
             color="secondary"
             component={Link}
             to="/from_json_file"
+            onClick={() => {setIsVisible(true)}}
           >
             Create From JSON file
           </Button>
         </Stack>
       </Stack>
     {/* </ThemeContext.Provider> */}
+    </motion.div>
     </ThemeProvider>
+
     </div>
   )
 }
@@ -120,9 +148,18 @@ const BlackOut = () => {
   )
 }
 
+const bioList = []
+
+// const Option = map(bioList,()=>{
+
+// })
+
 const From_ProteinID = () => {  
   const navigate = useNavigate();
   const [isLoading,setLoading] = useState(false);
+  const [optionList,setOption] = useState([
+    false,false,false,false
+  ])
   const onSubmit = (data) => {
     setLoading(true)
     Axios.get('http://127.0.0.1:5000/protein_id',{
@@ -142,6 +179,25 @@ const From_ProteinID = () => {
   };
   return(
     <div>
+      <motion.div
+        animate={{
+          opacity: 1,
+          transition:{
+            delay: 1.0
+          }
+        }}
+        initial={{
+          opacity: 0,
+          
+        }}
+        exit={{
+          opacity: 0,
+        }}
+        transition={{
+          duration: 1.0,
+          
+        }}
+      >
       <ThemeProvider theme={darkTheme}>
       <div className="test">
       <InputForms onSubmit={onSubmit} isLoading={isLoading}/>
@@ -149,6 +205,7 @@ const From_ProteinID = () => {
       {isLoading && <BlackOut />}
       {isLoading && <MyLoading />}
       </ThemeProvider>
+      </motion.div>
     </div>
   )
 }
@@ -167,7 +224,7 @@ const InputForms= props => {
         //id="outlined-disabled"
         {...register('protein_id')}
         variant="filled"
-        
+        onChange
         InputLabelProps={{
           shrink: true,
         }}
@@ -231,6 +288,25 @@ const From_JSONFILE = () => {
     });
   };
   return(
+    <motion.div
+        animate={{
+          opacity: 1,
+          transition:{
+            delay: 1.0
+          }
+        }}
+        initial={{
+          opacity: 0,
+          
+        }}
+        exit={{
+          opacity: 0,
+        }}
+        transition={{
+          duration: 1.0,
+          
+        }}
+      >
     <ThemeProvider theme={darkTheme}>
       <FileInputForm 
         handleFileUpload={handleFileUpload}
@@ -241,6 +317,7 @@ const From_JSONFILE = () => {
       {isLoading && <BlackOut />}
       {isLoading && <MyLoading />}
     </ThemeProvider>
+    </motion.div>
   )
 }
 
