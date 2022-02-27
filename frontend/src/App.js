@@ -37,13 +37,6 @@ const darkTheme = createTheme({
 const Input = styled('input')({
   display: 'none',
 });
-const Item = styled(Paper)(({ theme }) => ({
-  backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
-  ...theme.typography.body2,
-  padding: theme.spacing(1),
-  textAlign: 'center',
-  color: theme.palette.text.secondary,
-}));
 
 const MyApp = () =>{
   return(
@@ -61,32 +54,39 @@ const MyApp = () =>{
 }
 const TopPage = () => {
   return(
-    <div>
+    <div className="center">
     {/* <ThemeContext.Provider value="dark"> */}
     <ThemeProvider theme={darkTheme}>
-      <Button
-          variant="contained"
-          color="primary"
-          component={Link}
-          to="/from_protein_id"
-      >
-          Create From ProteinID
-      </Button>
-      <Button
-          variant="contained"
-          color="secondary"
-          component={Link}
-          to="/from_json_file"
-      >
-          Create From JSON file
-        </Button>
+      <Stack spacing={15}>
+        <h1>
+          easy<span className="orangeText">PPI</span>
+        </h1>
+        <Stack spacing={5}>
+          <Button
+            variant="contained"
+            color="primary"
+            component={Link}
+            to="/from_protein_id"
+          >
+              Create From ProteinID
+          </Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            component={Link}
+            to="/from_json_file"
+          >
+            Create From JSON file
+          </Button>
+        </Stack>
+      </Stack>
     {/* </ThemeContext.Provider> */}
     </ThemeProvider>
     </div>
   )
 }
 
-const MyLoading = props => {
+const MyLoading = () => {
   return(
     <Container maxWidth="sm" sx={{pt:2}}>
       <div className="center">
@@ -157,7 +157,7 @@ const InputForms= props => {
   const { register, handleSubmit } = useForm();
   return (
     
-    <Container maxWidth="sm" sx={{pt:5}}>
+    <Container maxWidth="sm" sx={{pt:5}} className="center">
       <Stack spacing= {2}>
       <TextField 
         disabled={props.isLoading}
@@ -189,7 +189,6 @@ const InputForms= props => {
       >Create a Graph</Button>
       </Stack>
     </Container>
-   
   );
 }
 
@@ -256,7 +255,7 @@ const FileInputForm = props => {
   );
   const classes = useUploadButtonStyles();*/
   return (
-      <Container maxWidth="sm" sx={{pt:5}}>
+      <Container maxWidth="sm" sx={{pt:5}} className="center">
         <Stack spacing= {2}>
           {/*<Button component="label" disabled={props.isLoading}>
             <input
@@ -266,7 +265,7 @@ const FileInputForm = props => {
               onChange={props.handleFileUpload}
             />
           </Button>*/}
-          <label>
+          <label >
             <Input accept="application/json" multiple type="file" onChange={props.handleFileUpload} />
             <Button 
             variant="contained"
@@ -403,7 +402,7 @@ const GraphPage = () => {
       }
     })
   }
-  console.log(state.target)
+  //console.log(state.target)
   return(
   
   //<div>
@@ -566,7 +565,7 @@ const GraphDrawing = props => {
       });
       layout.run()
       cy.zoomingEnabled( true );
-      console.log(props.target)
+      //console.log(props.target)
       if(props.target) {
         cy.zoom(1)
         let id = '#' + props.target

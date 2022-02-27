@@ -35,3 +35,22 @@ code {
   left: 50%;
   transform: translateY(-50%) translateX(-50%);
 }
+@font-face {
+	font-family: 'Phenomena-ExtraBold';
+	src: url(~/assets/font/Phenomena-ExtraBold.otf);
+}
+.orangeText{
+  color: #F90;
+}
+
+h1 {
+  font-family: itc-avant-garde-gothic-pro, Phenomena-ExtraBold,sans-serif;
+  font-weight: 800;
+  font-size: 150px;
+
+  color: #FFF;
+  padding: 0;
+  margin: 0;
+
+  text-shadow: 10px 10px 10px #000000;
+}
