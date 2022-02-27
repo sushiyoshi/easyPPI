@@ -86,9 +86,12 @@ def deeper_mode():
             req = request.get_json()
             elem = req['file']
             protein_id = req['protein_id']
+            # x = int(req['x'])
+            # y = int(req['y'])
+            # re = xml_to_json.xmlTojson_deep(elem,protein_id,x,y)
             re = xml_to_json.xmlTojson_deep(elem,protein_id)
             print(re)
-            return make_response(jsonify({"elem":re,"state":0}))
+            return make_response(jsonify({"elem":json.dumps(re[0],ensure_ascii=True),"protein_list":re[1],"state":0}))
     except Exception as e:
         error_text = error_obj(1,str(e))
         return make_response(jsonify(error_text))

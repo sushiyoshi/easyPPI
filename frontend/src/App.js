@@ -1,4 +1,4 @@
-import React,{useState,useRef,useCallback,useEffect} from 'react';
+import React,{useState,useRef,useCallback,useEffect,useMemo} from 'react';
 import CytoscapeComponent from 'react-cytoscapejs';
 import Axios from 'axios';
 import { BrowserRouter as Router, Routes,Route,useNavigate,useLocation,Link } from 'react-router-dom';
@@ -97,7 +97,7 @@ const MyLoading = props => {
           height="100px"
           width="100px"
         />
-        <div style={{fontWeight: 'bold',color:"#FF9900",textAlign:"center"}}>Loading..</div>.
+        <div style={{fontWeight: 'bold',color:"#FFF",textAlign:"center"}}>Loading..</div>.
 
       </div>
     </Container>
@@ -113,7 +113,7 @@ const BlackOut = () => {
       "width":"100%",
       "height":"100%",
     
-      "background-color":"#000000",
+      "backgroundColor":"#000000",
       "opacity":0.5,
       //"visibility":"hidden",
     }} />
@@ -303,10 +303,13 @@ const FileInputForm = props => {
 const GraphPage = () => {
   //const pageID = Math.random();
   //onsole.log(pageID)
+  //console.log("Pagedasda")
   const { state } = useLocation();
   const [isLoading,setLoading] = useState(false);
+  const [layoutChangeFlag,setLayoutChangeFlag] = useState(false);
   const [nodeNum,setNodeNum] = useState(0);
   const [isNumberLoading,setNumberLoading] = useState(false);
+  //const [proteinPosition,setProteinPosition] = useState(null);
   //console.log(useLocation())
   const [proteinInfo,setProteinInfo] = useState(null);
   //console.log(proteinInfo)
@@ -314,7 +317,6 @@ const GraphPage = () => {
   const elements = JSON.parse(state.elements)
   const protein_name = elements[1].data.name
   const navigate = useNavigate();
-
   const handleSendFile = () => {
     //const params = new FormData();
     //params.append('file', state.element);
@@ -354,11 +356,11 @@ const GraphPage = () => {
   }
   const handleNodeClick = obj => {
     setNumberLoading(true)
-    setProteinInfo(obj)
     setCopyFlag(false)
+    setProteinInfo(obj.data);
     Axios.get('http://127.0.0.1:5000/getLength',{
     params:{
-      target:obj.id,
+      target:obj.data.id,
     }})
     .then((response) => {
       setNumberLoading(false)
@@ -369,12 +371,11 @@ const GraphPage = () => {
         console.log(response.data.elem);
       }
     });
-  }
+  };
   const handleCopy = () => {
     setCopyFlag(true)
   }
   const handleSendProtein = () => {
-    
     /*
     params.append('file', elements);
     params.append('protein_name', protein_name);
@@ -386,21 +387,38 @@ const GraphPage = () => {
       console.log(response.data)
     })*/
     setLoading(true);
-    Axios.post('http://127.0.0.1:5000/deeper_mode',{"file":elements,"protein_id":proteinInfo.id}).then(response=>{
+    Axios.post('http://127.0.0.1:5000/deeper_mode',{
+      "file":elements,
+      "protein_id":proteinInfo.id,
+    }).then(response=>{
       setLoading(false);
-      console.log(response.data)
-      if(response.data.state == 0) {
-        navigate("/graph",{ state:{elements:response.data.elem} });
+      //console.log(response.data)
+      let re = response.data;
+      if(re.state == 0) {
+        //navigate("/graph",{ state:{elements:re.elem,proteinList:re.protein_list,proteinTarget:proteinInfo.id} });
+        navigate("/graph",{ state:{elements:re.elem,target:proteinInfo.id} });
+        setLayoutChangeFlag(!layoutChangeFlag)
       }else {
         console.log(response.data.elem);
       }
     })
   }
+  console.log(state.target)
   return(
   
   //<div>
   <ThemeProvider theme={darkTheme}>
-    <GraphDrawing elements={elements} className="center" handleNodeClick={handleNodeClick}/>
+    {/* <GraphDrawing elements={elements} className="center" 
+      handleNodeClick={handleNodeClick}
+      //proteinList={state.proteinList ? state.proteinList : null}
+      //proteinTarget={state.proteinTarget ? state.proteinTarget : null}
+      //proteinInfo={proteinInfo}
+    /> */}
+    <GraphDrawingMemo elements={elements} 
+      handleNodeClick={handleNodeClick} 
+      changeFlag={layoutChangeFlag}
+      target={state.target ? state.target : null}
+      />
     <InformationWindow 
       handleSendFile={handleSendFile}
       proteinInfo={proteinInfo}
@@ -499,7 +517,6 @@ const GraphDrawing = props => {
   const cyRef = useRef();
   useEffect(() => {
     return () => {
-      console.log(cyRef)
       if (cyRef.current) {
         cyRef.current.removeAllListeners();
         cyRef.current = null;
@@ -508,17 +525,64 @@ const GraphDrawing = props => {
   }, []);
   const cyCallback = useCallback(
     cy => {
+      //if(props.layoutFlag) {
+      //}
       // this is called each render of the component, don't add more listeners
-      if (cyRef.current) return;
+      //手動レイアウト
+      // if(props.proteinList) {
+      //   console.log("SDADASD");
+      //   let base_protein = props.proteinTarget ? props.proteinTarget: null
+      //   let base_positionX = base_protein ? cy.$('#'+base_protein).position('x') :0;
+      //   let base_positionY = base_protein ? cy.$('#'+base_protein).position('y') :0;
+      //   let len = props.proteinList.length
+      //   props.proteinList.forEach((current,index)=>{
+      //     let angle = 2* Math.PI/len * index
+      //     let position = {
+      //       x:base_positionX + Math.cos(angle)*100,
+      //       y:base_positionY + Math.sin(angle)*100,
+      //     }
+      //     let id_ = '#'+current
+      //     console.log(id_)
+      //     cy.$(id_).position(position)
+      //   })
+      // }
+      const layout = cy.layout({
+        name: 'cose',
+        idealEdgeLength: 100,
+        nodeOverlap: 10,
+        refresh: 20,
+        fit: true,
+        padding: 50,
+        randomize: false,
+        componentSpacing: 100,
+        nodeRepulsion: 400000,
+        edgeElasticity: 100,
+        nestingFactor: 5,
+        gravity: 70,
+        numIter: 1000,
+        initialTemp: 200,
+        coolingFactor: 0.95,
+        minTemp: 1.0
+      });
+      layout.run()
+      cy.zoomingEnabled( true );
+      console.log(props.target)
+      if(props.target) {
+        cy.zoom(1)
+        let id = '#' + props.target
+        cy.zoom({
+          level:1.0,
+          position:cy.$(id).position()
+        })
+      }
 
+      if (cyRef.current) return;
       cyRef.current = cy;
-      cy.layout({
-        name: 'random'
-      })
       cy.on('click','node',e => {
-        console.log("Click Event (1クリックにつき1メッセージ)")
-        props.handleNodeClick(e.target._private.data)
+        //console.log("Click Event (1クリックにつき1メッセージ)")
+        props.handleNodeClick(e.target._private)
       })
+
     },
     [],
   );
@@ -542,7 +606,6 @@ const GraphDrawing = props => {
     coolingFactor: 0.95,
     minTemp: 1.0
   };
-  
   return <CytoscapeComponent
     // cy={(cy) => { 
     //   cy.layout({
@@ -593,7 +656,6 @@ const GraphDrawing = props => {
         'content': 'data(name)',
         'text-valign': 'center',
         'color': 'white',
-    
         'background-color': '#ff9900',
         'width': '50px',
         'height': '50px',
@@ -617,6 +679,21 @@ const GraphDrawing = props => {
     }
   ]}
   />;
+};
+const GraphDrawingMemo = React.memo(
+  ({elements,handleNodeClick,target}) => {
+  return <GraphDrawing className="center" 
+    elements={elements}
+    handleNodeClick={handleNodeClick}
+    target={target}
+  />
+},
+(prevProps, nextProps)=>{
+  //console.log(JSON.stringify(prevProps.elements) == JSON.stringify(nextProps.elements))
+  //return JSON.stringify(prevProps.elements) == JSON.stringify(nextProps.elements)
+  //console.log(prevProps.changeFlag == nextProps.changeFlag)
+  return prevProps.changeFlag == nextProps.changeFlag
 }
 
+);
 export default MyApp ;
