@@ -211,6 +211,7 @@ const From_ProteinID = () => {
         handleSetProteinID={handleSetProteinID}
         handleSetDepth={handleSetDepth}
         flag={proteinID}
+        cautionFlag={depth>=2}
       />
       </div>
       {isLoading && <BlackOut />}
@@ -247,6 +248,7 @@ const InputForms= props => {
             shrink: true,
           }}
       />
+      {props.cautionFlag ? <p style={{color:"#F90"}}>Caution: May take some time to analyze</p> : <p> </p>}
       <Button 
         disabled={props.isLoading || !props.flag}
         onClick={props.onSubmit}
@@ -320,6 +322,7 @@ const From_JSONFILE = () => {
         isLoading={isLoading}
         error={error}
         flag={file}
+        cautionFlag={depth>=2}
       />
       {isLoading && <BlackOut />}
       {isLoading && <MyLoading />}
@@ -359,6 +362,7 @@ const FileInputForm = props => {
               error={props.error}
             helperText={props.error ? props.error.data.error_message:null}
           />
+          {props.cautionFlag ? <p style={{color:"#F90"}}>Caution: May take some time to analyze</p> : <p> </p>}
           <Button 
             disabled={props.isLoading || !props.flag}
             onClick={props.onSubmit}
@@ -453,6 +457,7 @@ const GraphPage = () => {
       copyFlag={copyFlag}
       nodeNum={nodeNum}
       isNumberLoading={NumberLoading}
+      cautionFlag={nodeNum>20 && !NumberLoading}
     />
     {isLoading && <BlackOut />}
     {isLoading && <MyLoading />}
@@ -497,6 +502,9 @@ const InformationWindow = props => {
             </ListItem>
             <ListItem>
             {props.isNumberLoading ? <ReactLoading  type="spin" color="#FFF" height="20px" width="20px"/> : props.nodeNum}
+            </ListItem>
+            <ListItem>
+            {props.cautionFlag ? <p style={{color:"#F90"}}>Caution: May take some time to analyze</p> : <p> </p>}
             </ListItem>
             <ListItem>
             <div style={{fontWeight: 'bold',color:"#C83C0B"}}>Uniprot Link</div>
