@@ -15,6 +15,9 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import {motion ,AnimatePresence} from "framer-motion";
+import { FixedSizeList } from 'react-window';
+// import ListItemText from '@mui/material/ListItemText';
+// import ListItem from '@mui/material/ListItem';
 Cytoscape.use(COSEBilkent);
 
 //import './TopPage.js'
@@ -61,7 +64,6 @@ const Routing = () =>{
   );
 }
 const TopPage = () => {
-  const [isVisible, setIsVisible] = useState(false);
   return(
     <div className="center">
     {/* <ThemeContext.Provider value="dark"> */}
@@ -69,17 +71,20 @@ const TopPage = () => {
       <motion.div
         animate={{
           y: 0,
-          opacity: 1
+          opacity: 1,
+          transition:{
+            duration: 1.0,
+          }
         }}
         initial={{
           y: 50,
-          opacity: 0
+          opacity: 0,
         }}
         exit={{
-          opacity: 0
-        }}
-        transition={{
-          duration: 1.0
+          opacity: 0,
+          transition:{
+            duration: 0.5,
+          }
         }}
       >
       <Stack spacing={15}>
@@ -100,7 +105,6 @@ const TopPage = () => {
             color="secondary"
             component={Link}
             to="/from_json_file"
-            onClick={() => {setIsVisible(true)}}
           >
             Create From JSON file
           </Button>
@@ -150,18 +154,19 @@ const BlackOut = () => {
 
 const bioList = ['HUMAN', 'PONPY', 'HYLLA', 'SAGFU', 'MACFA', 'MACMU', 'PANTR', 'HORSE', 'PIG', 'BOVIN', 'CANFA', 'URSAR', 'FELCA', 'PANTI', 'BALMU', 'KOGSI', 'CEPEU', 'ORCOR', 'RABIT', 'MOUSE', 'CRIGR', 'MESAU', 'MACGI', 'SARHA', 'PHACI', 'LACVV', 'PODMU', 'LACBL', 'IGUIG', 'TERCA', 'CHEMY', 'APAFE', 'ALLMI', 'ALLSI', 'CRONI', 'CAICR', 'BOACO', 'PYTSE', 'OPHHA', 'CHICK', 'CORBR', 'VIRLA', 'AQUCH', 'APTPA', 'EUDCH', 'XENLA', 'RANNI', 'RANSI', 'SALSA', 'SCOSC', 'CARAU', 'BRARE', 'CYPCA', 'ANGRO', 'LEPSP', 'PRIGL', 'PASSE', 'DROME', 'ANOQU', 'ARTSF', 'ORYSA', 'SOLTU', 'HORVU', 'MAIZE', 'PEA', 'PHYPA', 'LYCES', 'CUCSA', 'ARATH', 'SPIOL', 'YEAST', 'ECOLI', 'ECO57', 'SALTY', 'SALTI', 'VIBCH', 'HELPY', 'BACSU', 'ERWCT', 'HAES1']
 
-// const Option = map(bioList,()=>{
+const initialOption = bioList.map(()=> false)
 
-// })
+const Option = () => {
+  const [optionList,setOption] = useState(initialOption)
+}
+
 
 const From_ProteinID = () => {  
   const navigate = useNavigate();
   const [isLoading,setLoading] = useState(false);
   const [proteinID,setProteinID] = useState(null)
   const [depth,setDepth] = useState(0)
-  const [optionList,setOption] = useState([
-    false,false,false,false
-  ])
+  //console.log(optionList)
   const handleSetProteinID = e => {
     const eID = e.target.value;
     setProteinID(eID);
@@ -178,7 +183,7 @@ const From_ProteinID = () => {
       // target:data.protein_id,
       // depth:data.depth,
       target:proteinID,
-      depth:depth,
+      depth:depth ? depth : 0,
     }})
     .then((response) => {
       setLoading(false)
@@ -197,7 +202,7 @@ const From_ProteinID = () => {
         animate={{
           opacity: 1,
           transition:{
-            delay: 1.0
+            delay: 0.5
           }
         }}
         initial={{
@@ -208,7 +213,7 @@ const From_ProteinID = () => {
           opacity: 0,
         }}
         transition={{
-          duration: 1.0,
+          duration: 0.5,
           
         }}
       >
@@ -220,7 +225,7 @@ const From_ProteinID = () => {
         error={error}
         handleSetProteinID={handleSetProteinID}
         handleSetDepth={handleSetDepth}
-        flag={depth&&proteinID}
+        flag={proteinID}
       />
       </div>
       {isLoading && <BlackOut />}
@@ -298,7 +303,7 @@ const From_JSONFILE = () => {
     setLoading(true);
     const params = new FormData();
     params.append('file', file);
-    params.append('depth', depth);
+    params.append('depth', depth ? depth : 0);
     Axios.post('http://127.0.0.1:5000/file_mode',params,{
       headers: {
         'content-type': 'multipart/form-data',
@@ -341,7 +346,7 @@ const From_JSONFILE = () => {
         onSubmit={onSubmit}
         isLoading={isLoading}
         error={error}
-        flag={depth && file}
+        flag={file}
       />
       {isLoading && <BlackOut />}
       {isLoading && <MyLoading />}
@@ -416,15 +421,19 @@ const GraphPage = () => {
   const [isLoading,setLoading] = useState(false);
   const [layoutChangeFlag,setLayoutChangeFlag] = useState(false);
   const [nodeNum,setNodeNum] = useState(0);
-  const [isNumberLoading,setNumberLoading] = useState(false);
+  const [NumberLoading,setNumberLoading] = useState(false);
   //const [proteinPosition,setProteinPosition] = useState(null);
   //console.log(useLocation())
   const [proteinInfo,setProteinInfo] = useState(null);
+  const [response,setResponse]=useState(null)
   //console.log(proteinInfo)
   const [copyFlag,setCopyFlag] = useState(false);
   const elements = JSON.parse(state.elements)
   const protein_name = elements[1].data.name
   const navigate = useNavigate();
+  const ref = React.useRef(null);
+  //console.log(ref)
+  ref.current = proteinInfo
   const handleSendFile = () => {
     //const params = new FormData();
     //params.append('file', state.element);
@@ -463,7 +472,7 @@ const GraphPage = () => {
     saveAs(blob, filename);
   }
   const handleNodeClick = obj => {
-    setNumberLoading(true)
+    setNumberLoading(true);
     setCopyFlag(false)
     setProteinInfo(obj.data);
     Axios.get('http://127.0.0.1:5000/getLength',{
@@ -471,15 +480,26 @@ const GraphPage = () => {
       target:obj.data.id,
     }})
     .then((response) => {
-      setNumberLoading(false)
-      //console.log(response)
       if(response.data.state == 0) {
+        // console.log(NumberLoading-1);
+        // setNumberLoading(NumberLoading-1)
+        // setNodeNum(Number(response.data.elem))
         setNodeNum(Number(response.data.elem))
+        if(ref.current && ref.current.id==response.data.target) {
+          setNodeNum(Number(response.data.elem))
+          setNumberLoading(false)
+        }
       }else {
         console.log(response.data.elem);
       }
     });
   };
+
+  // const compareProteinInfo = response => {
+  //   console.log(response.target)
+  //   console.log(proteinInfo.id)
+  //   return response.data.target!=proteinInfo.id
+  // }
   const handleCopy = () => {
     setCopyFlag(true)
   }
@@ -511,11 +531,15 @@ const GraphPage = () => {
       }
     })
   }
-  //console.log(state.target)
+  // useEffect(()=> {
+  //   if(response && response.target == proteinInfo.id) setNumberLoading(true)
+  // })
+
   return(
   
   //<div>
   <ThemeProvider theme={darkTheme}>
+   
     {/* <GraphDrawing elements={elements} className="center" 
       handleNodeClick={handleNodeClick}
       //proteinList={state.proteinList ? state.proteinList : null}
@@ -536,7 +560,7 @@ const GraphPage = () => {
       handleCopy={handleCopy}
       copyFlag={copyFlag}
       nodeNum={nodeNum}
-      isNumberLoading={isNumberLoading}
+      isNumberLoading={NumberLoading}
     />
     {isLoading && <BlackOut />}
     {isLoading && <MyLoading />}
@@ -596,7 +620,7 @@ const InformationWindow = props => {
             <div style={{fontWeight: 'bold',color:"#C83C0B"}}>Uniprot Link</div>
             </ListItem>
             <ListItem>
-              <TextField disabled="true" value={proteinURL}/>
+              <TextField disabled value={proteinURL}/>
               <CopyToClipboard
                 text= {proteinURL}
                 color="secondary"
@@ -673,17 +697,15 @@ const GraphDrawing = props => {
         minTemp: 1.0
       });
       layout.run()
-      cy.zoomingEnabled( true );
       //console.log(props.target)
-      if(props.target) {
-        cy.zoom(1)
-        let id = '#' + props.target
-        cy.zoom({
-          level:1.0,
-          position:cy.$(id).position()
-        })
-      }
-
+      // if(props.target) {
+      //   cyRef.zoom(1)
+      //   let id = '#' + props.target
+      //   cyRef.zoom({
+      //     level:1.0,
+      //     position:cyRef.$(id).position()
+      //   })
+      // }
       if (cyRef.current) return;
       cyRef.current = cy;
       cy.on('click','node',e => {

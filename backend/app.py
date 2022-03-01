@@ -104,7 +104,7 @@ def getLength():
             #アクセッション番号
             target = request.args.get('target', '')
             re = xml_to_json.getNodeLength(target)
-            return make_response(jsonify({"elem":re,"state":0}))
+            return make_response(jsonify({"elem":re,"state":0,"target":target}))
     except Exception as e:
         error_text = error_obj(1,str(e))
         return make_response(jsonify(error_text))
