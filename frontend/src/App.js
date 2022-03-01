@@ -16,15 +16,7 @@ import ListItem from '@mui/material/ListItem';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import {motion ,AnimatePresence} from "framer-motion";
 import { FixedSizeList } from 'react-window';
-// import ListItemText from '@mui/material/ListItemText';
-// import ListItem from '@mui/material/ListItem';
 Cytoscape.use(COSEBilkent);
-
-//import './TopPage.js'
-//import './FromJSONFile.js'
-
-//const From_JSONFILE = React.lazy(() => import('./From_JSONFILE'))
-//const TopPage = React.lazy(()=> import('./TopPage'))
 const darkTheme = createTheme({
   palette: {
     mode: 'dark',
@@ -66,7 +58,6 @@ const Routing = () =>{
 const TopPage = () => {
   return(
     <div className="center">
-    {/* <ThemeContext.Provider value="dark"> */}
     <ThemeProvider theme={darkTheme}>
       <motion.div
         animate={{
@@ -110,7 +101,6 @@ const TopPage = () => {
           </Button>
         </Stack>
       </Stack>
-    {/* </ThemeContext.Provider> */}
     </motion.div>
     </ThemeProvider>
 
@@ -125,7 +115,6 @@ const MyLoading = () => {
         <ReactLoading
           type="bars"
           color="#FF9900"
-          //color="#fff"
           height="100px"
           width="100px"
         />
@@ -147,7 +136,6 @@ const BlackOut = () => {
     
       "backgroundColor":"#000000",
       "opacity":0.5,
-      //"visibility":"hidden",
     }} />
   )
 }
@@ -180,8 +168,6 @@ const From_ProteinID = () => {
     setLoading(true)
     Axios.get('http://127.0.0.1:5000/protein_id',{
     params:{
-      // target:data.protein_id,
-      // depth:data.depth,
       target:proteinID,
       depth:depth ? depth : 0,
     }})
@@ -214,7 +200,6 @@ const From_ProteinID = () => {
         }}
         transition={{
           duration: 0.5,
-          
         }}
       >
       <ThemeProvider theme={darkTheme}>
@@ -237,8 +222,6 @@ const From_ProteinID = () => {
 }
 
 const InputForms= props => {
-  
-  //console.log(props.error ? props.error.error_message:null)
   return (
     <Container maxWidth="sm" sx={{pt:5}} className="center">
       <Stack spacing= {2}>
@@ -248,9 +231,6 @@ const InputForms= props => {
         disabled={props.isLoading}
         label="Protein ID"
         color="secondary"
-        //id="outlined-basic"  
-        //id="outlined-disabled"
-        // {...register('protein_id')}
         variant="filled"
         onChange={props.handleSetProteinID}
         InputLabelProps={{
@@ -258,11 +238,9 @@ const InputForms= props => {
         }}
       />
       <TextField
-          // error={props.error}
           disabled={props.isLoading}
           label="Depth"
           color="secondary"
-          // {...register('depth')}
           onChange={props.handleSetDepth}
           type="number"
           InputLabelProps={{
@@ -285,11 +263,6 @@ const From_JSONFILE = () => {
   const [depth,setDepth] = useState(0);
   const [isLoading,setLoading] = useState(false);
   const navigate = useNavigate();
-  //const form_data = new FormData();
-  /*const handleFile = event => {
-  console.log(event.target.files);
-    //form_data.append('file',)
-  }*/
   const handleFileUpload = e => {
     const efile = e.target.files[0];
     setFile(efile);
@@ -324,7 +297,7 @@ const From_JSONFILE = () => {
         animate={{
           opacity: 1,
           transition:{
-            delay: 1.0
+            delay: 0.5
           }
         }}
         initial={{
@@ -335,7 +308,7 @@ const From_JSONFILE = () => {
           opacity: 0,
         }}
         transition={{
-          duration: 1.0,
+          duration: 0.5,
           
         }}
       >
@@ -356,26 +329,9 @@ const From_JSONFILE = () => {
 }
 
 const FileInputForm = props => {
-  /*
-  const useUploadButtonStyles = makeStyles((theme) =>
-    createStyles({
-      input: {
-        display: 'none',
-      },
-    })
-  );
-  const classes = useUploadButtonStyles();*/
   return (
       <Container maxWidth="sm" sx={{pt:5}} className="center">
         <Stack spacing= {2}>
-          {/*<Button component="label" disabled={props.isLoading}>
-            <input
-              disabled={props.isLoading}
-              className="inputFileBtnHide"
-              type="file"
-              onChange={props.handleFileUpload}
-            />
-          </Button>*/}
           <label >
             <Input accept="application/json" multiple type="file" onChange={props.handleFileUpload} />
             <Button 
@@ -414,9 +370,6 @@ const FileInputForm = props => {
 }
 
 const GraphPage = () => {
-  //const pageID = Math.random();
-  //onsole.log(pageID)
-  //console.log("Pagedasda")
   const { state } = useLocation();
   const [isLoading,setLoading] = useState(false);
   const [layoutChangeFlag,setLayoutChangeFlag] = useState(false);
@@ -435,36 +388,6 @@ const GraphPage = () => {
   //console.log(ref)
   ref.current = proteinInfo
   const handleSendFile = () => {
-    //const params = new FormData();
-    //params.append('file', state.element);
-    /*Axios.post('http://127.0.0.1:5000/download',params,{
-      headers: {
-        'content-type': 'multipart/form-data',
-      },
-    })*/
-    
-    // Axios.post('http://127.0.0.1:5000/download',state.elements,{
-    //   headers: {
-    //     'content-type': 'application/json',
-    //   },
-    //   dataType: "binary",
-    //   responseType: "blob",
-    // }).then(response => {
-    //   console.log(response.data)
-    //   //navigate("/graph",{ state:{elements:response.data} });
-    // });
-    // Axios.axios({
-    //   method: "POST",
-    //   url: "http://127.0.0.1:5000/downloa",
-    //   data: state.elements,
-    //   headers: {
-    //     'content-type': 'application/json', 
-    //   },
-    //   responseType: "blob"
-    // }).then(response => {
-    //   console.log(response.data)
-    //   //navigate("/graph",{ state:{elements:response.data} });
-    // });
     const blob = new Blob([state.elements], {
       type: 'application/json'
     });
@@ -481,9 +404,6 @@ const GraphPage = () => {
     }})
     .then((response) => {
       if(response.data.state == 0) {
-        // console.log(NumberLoading-1);
-        // setNumberLoading(NumberLoading-1)
-        // setNodeNum(Number(response.data.elem))
         setNodeNum(Number(response.data.elem))
         if(ref.current && ref.current.id==response.data.target) {
           setNodeNum(Number(response.data.elem))
@@ -494,36 +414,18 @@ const GraphPage = () => {
       }
     });
   };
-
-  // const compareProteinInfo = response => {
-  //   console.log(response.target)
-  //   console.log(proteinInfo.id)
-  //   return response.data.target!=proteinInfo.id
-  // }
   const handleCopy = () => {
     setCopyFlag(true)
   }
   const handleSendProtein = () => {
-    /*
-    params.append('file', elements);
-    params.append('protein_name', protein_name);
-    Axios.post('http://127.0.0.1:5000/deeper_mode',params,{
-      headers: {
-        'content-type': 'multipart/form-data',
-      },
-    }).then(response=>{
-      console.log(response.data)
-    })*/
     setLoading(true);
     Axios.post('http://127.0.0.1:5000/deeper_mode',{
       "file":elements,
       "protein_id":proteinInfo.id,
     }).then(response=>{
       setLoading(false);
-      //console.log(response.data)
       let re = response.data;
       if(re.state == 0) {
-        //navigate("/graph",{ state:{elements:re.elem,proteinList:re.protein_list,proteinTarget:proteinInfo.id} });
         navigate("/graph",{ state:{elements:re.elem,target:proteinInfo.id} });
         setLayoutChangeFlag(!layoutChangeFlag)
       }else {
@@ -531,21 +433,11 @@ const GraphPage = () => {
       }
     })
   }
-  // useEffect(()=> {
-  //   if(response && response.target == proteinInfo.id) setNumberLoading(true)
-  // })
 
   return(
   
   //<div>
   <ThemeProvider theme={darkTheme}>
-   
-    {/* <GraphDrawing elements={elements} className="center" 
-      handleNodeClick={handleNodeClick}
-      //proteinList={state.proteinList ? state.proteinList : null}
-      //proteinTarget={state.proteinTarget ? state.proteinTarget : null}
-      //proteinInfo={proteinInfo}
-    /> */}
     <GraphDrawingMemo elements={elements} 
       handleNodeClick={handleNodeClick} 
       changeFlag={layoutChangeFlag}
@@ -577,8 +469,6 @@ const commonStyles = {
 };
 
 const InformationWindow = props => {
-  //console.log(props.proteinInfo)
-  //console.log(props.elements)
   const flag = props.proteinInfo!=null;
   const proteinURL =flag ? "https://www.uniprot.org/uniprot/" + props.proteinInfo.id :  'null'
   return(
@@ -589,14 +479,6 @@ const InformationWindow = props => {
           JSON Download
         </Button>
         <Box sx={{ ...commonStyles, borderRadius: 1 }}>
-          
-          {/* <Stack>
-          <p>Protein Name</p>
-          <p>{flag ? props.proteinInfo.name :  'null'}</p>
-          <p>Protein ID</p>
-          <p>{flag ? props.proteinInfo.id :  'null'}</p>
-          
-          </Stack> */}
           <List>
             <ListItem>
             <div style={{fontWeight: 'bold',color:"#C83C0B"}}>Name</div>
@@ -657,27 +539,6 @@ const GraphDrawing = props => {
   }, []);
   const cyCallback = useCallback(
     cy => {
-      //if(props.layoutFlag) {
-      //}
-      // this is called each render of the component, don't add more listeners
-      //手動レイアウト
-      // if(props.proteinList) {
-      //   console.log("SDADASD");
-      //   let base_protein = props.proteinTarget ? props.proteinTarget: null
-      //   let base_positionX = base_protein ? cy.$('#'+base_protein).position('x') :0;
-      //   let base_positionY = base_protein ? cy.$('#'+base_protein).position('y') :0;
-      //   let len = props.proteinList.length
-      //   props.proteinList.forEach((current,index)=>{
-      //     let angle = 2* Math.PI/len * index
-      //     let position = {
-      //       x:base_positionX + Math.cos(angle)*100,
-      //       y:base_positionY + Math.sin(angle)*100,
-      //     }
-      //     let id_ = '#'+current
-      //     console.log(id_)
-      //     cy.$(id_).position(position)
-      //   })
-      // }
       const layout = cy.layout({
         name: 'cose',
         idealEdgeLength: 100,
@@ -697,19 +558,25 @@ const GraphDrawing = props => {
         minTemp: 1.0
       });
       layout.run()
-      //console.log(props.target)
-      // if(props.target) {
-      //   cyRef.zoom(1)
-      //   let id = '#' + props.target
-      //   cyRef.zoom({
-      //     level:1.0,
-      //     position:cyRef.$(id).position()
-      //   })
-      // }
+      // cy.zoom(0); 
+      // console.log(props.target)
+      // cy.zoom({
+      //   level:10.0,
+      //   position:{
+      //     x:100,y:100
+      //   }
+      // })
+      if(props.target) {
+        let id = '#' + props.target
+        console.log(id)
+        cy.zoom({
+          level:1.0,
+          position:cy.$(id).position()
+        })
+      }
       if (cyRef.current) return;
       cyRef.current = cy;
       cy.on('click','node',e => {
-        //console.log("Click Event (1クリックにつき1メッセージ)")
         props.handleNodeClick(e.target._private)
       })
 
@@ -718,35 +585,7 @@ const GraphDrawing = props => {
   );
   //const elements = JSON.parse(props.elements)
   const elements = props.elements
-  const layout ={
-    name: 'cose',
-    idealEdgeLength: 100,
-    nodeOverlap: 10,
-    refresh: 20,
-    fit: true,
-    padding: 50,
-    randomize: false,
-    componentSpacing: 100,
-    nodeRepulsion: 400000,
-    edgeElasticity: 100,
-    nestingFactor: 5,
-    gravity: 70,
-    numIter: 1000,
-    initialTemp: 200,
-    coolingFactor: 0.95,
-    minTemp: 1.0
-  };
   return <CytoscapeComponent
-    // cy={(cy) => { 
-    //   cy.layout({
-    //     name: 'random'
-    //   })
-      
-    //   cy.on('click','node',e => {
-    //     console.log("Click Event (1クリックにつき1メッセージ)")
-    //     props.handleNodeClick(e.target._private.data)
-    //   })
-    // }}
     cy={cyCallback}
     elements={elements}
     style={{ 
@@ -757,7 +596,6 @@ const GraphDrawing = props => {
       top: 0,
       background: "#35363A",
     }}
-    layout={layout} 
     stylesheet={[
     {
       selector: 'node',
@@ -813,17 +651,13 @@ const GraphDrawing = props => {
 const GraphDrawingMemo = React.memo(
   ({elements,handleNodeClick,target}) => {
   return <GraphDrawing className="center" 
-    elements={elements}
-    handleNodeClick={handleNodeClick}
-    target={target}
-  />
-},
-(prevProps, nextProps)=>{
-  //console.log(JSON.stringify(prevProps.elements) == JSON.stringify(nextProps.elements))
-  //return JSON.stringify(prevProps.elements) == JSON.stringify(nextProps.elements)
-  //console.log(prevProps.changeFlag == nextProps.changeFlag)
-  return prevProps.changeFlag == nextProps.changeFlag
-}
-
+      elements={elements}
+      handleNodeClick={handleNodeClick}
+      target={target}
+    />
+  },
+  (prevProps, nextProps)=>{
+    return prevProps.changeFlag == nextProps.changeFlag
+  }
 );
 export default MyApp ;
