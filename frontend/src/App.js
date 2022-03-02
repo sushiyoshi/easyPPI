@@ -13,6 +13,10 @@ import Cytoscape from 'cytoscape';
 import COSEBilkent from 'cytoscape-cose-bilkent';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListSubheader from '@mui/material/ListSubheader';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import {motion ,AnimatePresence} from "framer-motion";
 import { FixedSizeList } from 'react-window';
@@ -139,13 +143,78 @@ const BlackOut = () => {
     }} />
   )
 }
+const bioList =
+  {
+    'Mammal':['HUMAN', 'PONPY', 'HYLLA', 'SAGFU', 'MACFA', 'MACMU', 'PANTR', 'HORSE', 'PIG', 'BOVIN', 'CANFA', 'URSAR', 'FELCA', 'PANTI', 'BALMU', 'KOGSI', 'CEPEU', 'ORCOR', 'RABIT', 'MOUSE', 'CRIGR', 'MESAU', 'MACGI', 'SARHA', 'PHACI',],
+    'Reptiles':['LACVV', 'PODMU', 'LACBL', 'IGUIG', 'TERCA', 'CHEMY', 'APAFE', 'ALLMI', 'ALLSI', 'CRONI', 'CAICR', 'BOACO', 'PYTSE', 'OPHHA',],
+    'birds':['CHICK', 'CORBR', 'VIRLA', 'AQUCH', 'APTPA', 'EUDCH',],
+    'amphibian':['XENLA', 'RANNI', 'RANSI',],
+    'fishes':['SALSA', 'SCOSC', 'CARAU', 'BRARE', 'CYPCA', 'ANGRO', 'LEPSP', 'PRIGL', 'PASSE',],
+    'arthropod':['DROME', 'ANOQU', 'ARTSF',],
+    'plant':['ORYSA', 'SOLTU', 'HORVU', 'MAIZE', 'PEA', 'PHYPA', 'LYCES', 'CUCSA', 'ARATH', 'SPIOL'], 
+    'eucaryote':['YEAST', ],
+    'prokaryote':['ECOLI', 'ECO57', 'SALTY', 'SALTI', 'VIBCH', 'HELPY', 'BACSU', 'ERWCT', 'HAES1'],
+  }
 
-const bioList = ['HUMAN', 'PONPY', 'HYLLA', 'SAGFU', 'MACFA', 'MACMU', 'PANTR', 'HORSE', 'PIG', 'BOVIN', 'CANFA', 'URSAR', 'FELCA', 'PANTI', 'BALMU', 'KOGSI', 'CEPEU', 'ORCOR', 'RABIT', 'MOUSE', 'CRIGR', 'MESAU', 'MACGI', 'SARHA', 'PHACI', 'LACVV', 'PODMU', 'LACBL', 'IGUIG', 'TERCA', 'CHEMY', 'APAFE', 'ALLMI', 'ALLSI', 'CRONI', 'CAICR', 'BOACO', 'PYTSE', 'OPHHA', 'CHICK', 'CORBR', 'VIRLA', 'AQUCH', 'APTPA', 'EUDCH', 'XENLA', 'RANNI', 'RANSI', 'SALSA', 'SCOSC', 'CARAU', 'BRARE', 'CYPCA', 'ANGRO', 'LEPSP', 'PRIGL', 'PASSE', 'DROME', 'ANOQU', 'ARTSF', 'ORYSA', 'SOLTU', 'HORVU', 'MAIZE', 'PEA', 'PHYPA', 'LYCES', 'CUCSA', 'ARATH', 'SPIOL', 'YEAST', 'ECOLI', 'ECO57', 'SALTY', 'SALTI', 'VIBCH', 'HELPY', 'BACSU', 'ERWCT', 'HAES1']
-
-const initialOption = bioList.map(()=> false)
+const bioListLength = bioList.length;
+const initialOption = Object.keys(bioList).map(()=> false)
 
 const Option = () => {
   const [optionList,setOption] = useState(initialOption)
+  return (
+    // <Box
+    //   sx={{ width: '100%', height: 400, maxWidth: 360, bgcolor: 'background.paper' }}
+    // >
+    //   <FixedSizeList
+    //     height={300}
+    //     // width={300}
+    //     itemSize={46}
+    //     itemCount={bioListLength}
+    //     // overscanCount={5}
+    //   >
+    //     {renderRow}
+    //   </FixedSizeList>
+    // </Box>
+    <List
+      sx={{
+        width: '100%',
+        maxWidth: 360,
+        bgcolor: 'background.paper',
+
+        overflow: 'auto',
+      }}
+      subheader={<li />}
+    >
+      {Object.keys(bioList).map((key) => {
+        <ListSubheader>{key}</ListSubheader>
+        bioList[key].map((value,index)=>{
+          <renderRow text={value} index={index} />
+        })
+      })}
+    </List>
+  );
+}
+
+
+const renderRow = props => {
+  const {text,index,style} = props;
+  console.log({text})
+  return <ListItem key={index} component="div" disablePadding>
+            <ListItemButton role={undefined} dense>
+              <ListItemText>
+                    <p style={{color:"#FFF"}}>{text}</p>
+              </ListItemText>
+              <ListItemIcon>
+                  <Checkbox
+                    edge="start"
+                    //checked={checked.indexOf(value) !== -1}
+                    tabIndex={-1}
+                    disableRipple
+                    //inputProps={{ 'aria-labelledby': labelId }}
+                  />
+              </ListItemIcon>
+            </ListItemButton>
+          </ListItem>
 }
 
 
@@ -203,7 +272,7 @@ const From_ProteinID = () => {
         }}
       >
       <ThemeProvider theme={darkTheme}>
-      <div className="test">
+      <Option />
       <InputForms 
         onSubmit={onSubmit}
         isLoading={isLoading}
@@ -213,7 +282,6 @@ const From_ProteinID = () => {
         flag={proteinID}
         cautionFlag={depth>=2}
       />
-      </div>
       {isLoading && <BlackOut />}
       {isLoading && <MyLoading />}
       </ThemeProvider>
@@ -577,6 +645,7 @@ const GraphDrawing = props => {
       if(props.target) {
         let id = '#' + props.target
         console.log(id)
+        cy.zoomingEnabled()
         cy.zoom({
           level:1.0,
           position:cy.$(id).position()
