@@ -157,20 +157,7 @@ const bioList =
   }
 const initialOption = Object.keys(bioList).map((key)=> bioList[key].map(()=>false))
 const initialAllCheckList = Object.keys(bioList).map(()=>false)
-const Option = React.memo(() => {
-  const [optionList,setOption] = useState(initialOption)
-  const [allCheckList,setAllCheckList] = useState(initialAllCheckList)
-  const handleChange = (props) => {
-    const child_index = props.child_index
-    const parent_index = props.parent_index
-    setOption(optionList.map( (value ,parent_index_map) =>  parent_index_map == parent_index ? value.map((bool,child_index_map)=>child_index_map==child_index ? !bool : bool) : value))
-  }
-  const handleAllCheck = parent_index => {
-    console.log(parent_index)
-    setOption(optionList.map( (value ,parent_index_map) =>  parent_index_map == parent_index ? value.map((bool)=>!allCheckList[parent_index]) : value))
-    setAllCheckList(allCheckList.map((value,index) => index==parent_index ? !value : value))
-
-  }
+const Option = React.memo(props => {
   return (
     <div>
       <Box>
@@ -178,7 +165,7 @@ const Option = React.memo(() => {
         <List
           sx={{
             width: '100%',
-            height:400,
+            height:300,
             maxWidth: 360,
             bgcolor: 'background.paper',
             overflow: 'auto',
@@ -188,9 +175,9 @@ const Option = React.memo(() => {
         >
           {Object.keys(bioList).map((key,parent_index) => (
             <ul>
-            <ListSubheader style={{color:"#F90"}}>{key} <Checkbox onChange={()=>handleAllCheck(parent_index)}/></ListSubheader>
+            <ListSubheader style={{color:"#F90"}}>{key} <Checkbox onChange={()=>props.handleAllCheck(parent_index)}/></ListSubheader>
             {bioList[key].map((value,index)=>(
-              <BioListRow text={value} index={index} handleChange={handleChange} parent_index={parent_index} flag={optionList[parent_index][index]}/>
+              <BioListRow text={value} index={index} handleChange={props.handleChange} parent_index={parent_index} flag={props.optionList[parent_index][index]}/>
             ))}
             </ul>
           ))}
@@ -221,23 +208,35 @@ const BioListRow = props => {
           </ListItem>)
 }
 const From_ProteinID = () => { 
-  console.log("pri") 
   const navigate = useNavigate();
   const [isLoading,setLoading] = useState(false);
   const [proteinID,setProteinID] = useState(null)
   const [depth,setDepth] = useState(0)
+  const [optionList,setOption] = useState(initialOption)
+  const [allCheckList,setAllCheckList] = useState(initialAllCheckList)
+  const [ error, setError ] = useState(null);
+  const handleChange = useCallback((props) => {
+    const child_index = props.child_index
+    const parent_index = props.parent_index
+    setOption(optionList.map( (value ,parent_index_map) =>  parent_index_map == parent_index ? value.map((bool,child_index_map)=>child_index_map==child_index ? !bool : bool) : value))
+  },[optionList])
+  const handleAllCheck = useCallback(parent_index => {
+    setOption(optionList.map( (value ,parent_index_map) =>  parent_index_map == parent_index ? value.map((bool)=>!allCheckList[parent_index]) : value))
+    setAllCheckList(allCheckList.map((value,index) => index==parent_index ? !value : value))
+  },[allCheckList])
   //console.log(optionList)
-  const handleSetProteinID = e => {
+  const handleSetProteinID = useCallback(e => {
     const eID = e.target.value;
     setProteinID(eID);
-  }
-  const handleSetDepth = e => {
+  },[proteinID])
+  const handleSetDepth =useCallback( e => {
     const eDepth = e.target.value;
     setDepth(eDepth);
-  }
-  const [ error, setError ] = useState(null);
-  const onSubmit = (data) => {
+  },[depth])
+  const onSubmit = () => {
     setLoading(true)
+    const exceptList =  creactExceptList()
+    console.log(exceptList)
     Axios.get('http://127.0.0.1:5000/protein_id',{
     params:{
       target:proteinID,
@@ -251,9 +250,20 @@ const From_ProteinID = () => {
         console.log(response.data.elem);
         setError({data:response.data.elem})
       }
-
     });
-  };
+  }
+  const creactExceptList = () => {
+    let exceptList = []
+    Object.keys(bioList).forEach((value,parent_index) => {
+      //console.log(bioList[value],optionList[parent_index],optionList[parent_index][0])
+      let array = bioList[value].filter((value,index) => {
+        //console.log(index,optionList[parent_index][index])
+        return optionList[parent_index][index]
+      })
+      exceptList = exceptList.concat(array)
+    })
+    return exceptList;
+  }
   return(
     <div>
       <motion.div
@@ -275,16 +285,29 @@ const From_ProteinID = () => {
         }}
       >
       <ThemeProvider theme={darkTheme}>
-      <Option />
-      <InputForms 
-        onSubmit={onSubmit}
-        isLoading={isLoading}
-        error={error}
-        handleSetProteinID={handleSetProteinID}
-        handleSetDepth={handleSetDepth}
-        flag={proteinID}
-        cautionFlag={depth>=2}
-      />
+      <Container maxWidth="sm" sx={{pt:5}} className="center">
+        <Stack spacing= {2}>
+          <InputForms 
+            isLoading={isLoading}
+            error={error}
+            handleSetProteinID={handleSetProteinID}
+            handleSetDepth={handleSetDepth}
+            flag={proteinID}
+            cautionFlag={depth>=2}
+          />
+          <Option
+            handleChange={handleChange}
+            handleAllCheck={handleAllCheck}
+            allCheckList={allCheckList}
+            optionList={optionList}
+          />
+          <Button 
+            disabled={isLoading || !proteinID}
+            onClick={onSubmit}
+            variant="contained"
+          >Create a Graph</Button>
+        </Stack>
+      </Container>
       {isLoading && <BlackOut />}
       {isLoading && <MyLoading />}
       </ThemeProvider>
@@ -293,10 +316,9 @@ const From_ProteinID = () => {
   )
 }
 
-const InputForms= props => {
+const InputForms= React.memo(props => {
   return (
-    <Container maxWidth="sm" sx={{pt:5}} className="center">
-      <Stack spacing= {2}>
+    <Stack spacing= {2}>
       <TextField 
         error={props.error}
         helperText={props.error ? props.error.data.error_message:null}
@@ -320,15 +342,9 @@ const InputForms= props => {
           }}
       />
       {props.cautionFlag ? <p style={{color:"#F90"}}>Caution: May take some time to analyze</p> : <p> </p>}
-      <Button 
-        disabled={props.isLoading || !props.flag}
-        onClick={props.onSubmit}
-        variant="contained"
-      >Create a Graph</Button>
-      </Stack>
-    </Container>
+    </Stack>
   );
-}
+})
 
 const From_JSONFILE = () => {  
   const [file,setFile] = useState(null);
