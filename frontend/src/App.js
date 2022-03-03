@@ -155,58 +155,52 @@ const bioList =
     'Eucaryote':['YEAST', ],
     'Prokaryote':['ECOLI', 'ECO57', 'SALTY', 'SALTI', 'VIBCH', 'HELPY', 'BACSU', 'ERWCT', 'HAES1'],
   }
-
-const bioListLength = bioList.length;
 const initialOption = Object.keys(bioList).map((key)=> bioList[key].map(()=>false))
+const initialAllCheckList = Object.keys(bioList).map(()=>false)
 const Option = React.memo(() => {
   const [optionList,setOption] = useState(initialOption)
-  console.log(optionList)
+  const [allCheckList,setAllCheckList] = useState(initialAllCheckList)
   const handleChange = (props) => {
-    //console.log(props)
     const child_index = props.child_index
     const parent_index = props.parent_index
-    console.log(child_index,parent_index)
-    //const [child_index,parent_index] = props
     setOption(optionList.map( (value ,parent_index_map) =>  parent_index_map == parent_index ? value.map((bool,child_index_map)=>child_index_map==child_index ? !bool : bool) : value))
   }
+  const handleAllCheck = parent_index => {
+    console.log(parent_index)
+    setOption(optionList.map( (value ,parent_index_map) =>  parent_index_map == parent_index ? value.map((bool)=>!allCheckList[parent_index]) : value))
+    setAllCheckList(allCheckList.map((value,index) => index==parent_index ? !value : value))
+
+  }
   return (
-    // <Box
-    //   sx={{ width: '100%', height: 400, maxWidth: 360, bgcolor: 'background.paper' }}
-    // >
-    //   <FixedSizeList
-    //     height={300}
-    //     // width={300}
-    //     itemSize={46}
-    //     itemCount={bioListLength}
-    //     // overscanCount={5}
-    //   >
-    //     {renderRow}
-    //   </FixedSizeList>
-    // </Box>
-    <List
-      sx={{
-        width: '100%',
-        height:400,
-        maxWidth: 360,
-        bgcolor: 'background.paper',
-        overflow: 'auto',
-        '& ul': { padding: 0 },
-      }}
-      subheader={<li />}
-    >
-      {Object.keys(bioList).map((key,parent_index) => (
-        <ul>
-        <ListSubheader style={{color:"#F90"}}>{key}</ListSubheader>
-        {bioList[key].map((value,index)=>(
-          <BioListRow text={value} index={index} handleChange={handleChange} parent_index={parent_index}/>
-        ))}
-        </ul>
-      ))}
-    </List>
+    <div>
+      <Box>
+        <p style={{color:'#fff'}}>Except for:</p>
+        <List
+          sx={{
+            width: '100%',
+            height:400,
+            maxWidth: 360,
+            bgcolor: 'background.paper',
+            overflow: 'auto',
+            '& ul': { padding: 0 },
+          }}
+          subheader={<li />}
+        >
+          {Object.keys(bioList).map((key,parent_index) => (
+            <ul>
+            <ListSubheader style={{color:"#F90"}}>{key} <Checkbox onChange={()=>handleAllCheck(parent_index)}/></ListSubheader>
+            {bioList[key].map((value,index)=>(
+              <BioListRow text={value} index={index} handleChange={handleChange} parent_index={parent_index} flag={optionList[parent_index][index]}/>
+            ))}
+            </ul>
+          ))}
+        </List>
+      </Box>
+    </div>
   );
 })
 const BioListRow = props => {
-  const {text,index,handleChange,parent_index} = props;
+  const {text,index,handleChange,parent_index,flag} = props;
   //console.log(parent_index)
   return (<ListItem key={index} component="div" disablePadding>
             <ListItemButton role={undefined} dense>
@@ -217,8 +211,8 @@ const BioListRow = props => {
                   <Checkbox
                     edge="start"
                     //checked={checked.indexOf(value) !== -1}
-                    tabIndex={-1}
                     disableRipple
+                    checked={flag}
                     onChange={()=> handleChange({child_index:index,parent_index:parent_index})}
                     //inputProps={{ 'aria-labelledby': labelId }}
                   />
@@ -226,7 +220,8 @@ const BioListRow = props => {
             </ListItemButton>
           </ListItem>)
 }
-const From_ProteinID = () => {  
+const From_ProteinID = () => { 
+  console.log("pri") 
   const navigate = useNavigate();
   const [isLoading,setLoading] = useState(false);
   const [proteinID,setProteinID] = useState(null)
