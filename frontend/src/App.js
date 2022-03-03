@@ -147,20 +147,28 @@ const bioList =
   {
     'Mammal':['HUMAN', 'PONPY', 'HYLLA', 'SAGFU', 'MACFA', 'MACMU', 'PANTR', 'HORSE', 'PIG', 'BOVIN', 'CANFA', 'URSAR', 'FELCA', 'PANTI', 'BALMU', 'KOGSI', 'CEPEU', 'ORCOR', 'RABIT', 'MOUSE', 'CRIGR', 'MESAU', 'MACGI', 'SARHA', 'PHACI',],
     'Reptiles':['LACVV', 'PODMU', 'LACBL', 'IGUIG', 'TERCA', 'CHEMY', 'APAFE', 'ALLMI', 'ALLSI', 'CRONI', 'CAICR', 'BOACO', 'PYTSE', 'OPHHA',],
-    'birds':['CHICK', 'CORBR', 'VIRLA', 'AQUCH', 'APTPA', 'EUDCH',],
-    'amphibian':['XENLA', 'RANNI', 'RANSI',],
-    'fishes':['SALSA', 'SCOSC', 'CARAU', 'BRARE', 'CYPCA', 'ANGRO', 'LEPSP', 'PRIGL', 'PASSE',],
-    'arthropod':['DROME', 'ANOQU', 'ARTSF',],
-    'plant':['ORYSA', 'SOLTU', 'HORVU', 'MAIZE', 'PEA', 'PHYPA', 'LYCES', 'CUCSA', 'ARATH', 'SPIOL'], 
-    'eucaryote':['YEAST', ],
-    'prokaryote':['ECOLI', 'ECO57', 'SALTY', 'SALTI', 'VIBCH', 'HELPY', 'BACSU', 'ERWCT', 'HAES1'],
+    'Birds':['CHICK', 'CORBR', 'VIRLA', 'AQUCH', 'APTPA', 'EUDCH',],
+    'Amphibian':['XENLA', 'RANNI', 'RANSI',],
+    'Fishes':['SALSA', 'SCOSC', 'CARAU', 'BRARE', 'CYPCA', 'ANGRO', 'LEPSP', 'PRIGL', 'PASSE',],
+    'Arthropod':['DROME', 'ANOQU', 'ARTSF',],
+    'Plant':['ORYSA', 'SOLTU', 'HORVU', 'MAIZE', 'PEA', 'PHYPA', 'LYCES', 'CUCSA', 'ARATH', 'SPIOL'], 
+    'Eucaryote':['YEAST', ],
+    'Prokaryote':['ECOLI', 'ECO57', 'SALTY', 'SALTI', 'VIBCH', 'HELPY', 'BACSU', 'ERWCT', 'HAES1'],
   }
 
 const bioListLength = bioList.length;
-const initialOption = Object.keys(bioList).map(()=> false)
-
-const Option = () => {
+const initialOption = Object.keys(bioList).map((key)=> bioList[key].map(()=>false))
+const Option = React.memo(() => {
   const [optionList,setOption] = useState(initialOption)
+  console.log(optionList)
+  const handleChange = (props) => {
+    //console.log(props)
+    const child_index = props.child_index
+    const parent_index = props.parent_index
+    console.log(child_index,parent_index)
+    //const [child_index,parent_index] = props
+    setOption(optionList.map( (value ,parent_index_map) =>  parent_index_map == parent_index ? value.map((bool,child_index_map)=>child_index_map==child_index ? !bool : bool) : value))
+  }
   return (
     // <Box
     //   sx={{ width: '100%', height: 400, maxWidth: 360, bgcolor: 'background.paper' }}
@@ -178,28 +186,29 @@ const Option = () => {
     <List
       sx={{
         width: '100%',
+        height:400,
         maxWidth: 360,
         bgcolor: 'background.paper',
-
         overflow: 'auto',
+        '& ul': { padding: 0 },
       }}
       subheader={<li />}
     >
-      {Object.keys(bioList).map((key) => {
-        <ListSubheader>{key}</ListSubheader>
-        bioList[key].map((value,index)=>{
-          <renderRow text={value} index={index} />
-        })
-      })}
+      {Object.keys(bioList).map((key,parent_index) => (
+        <ul>
+        <ListSubheader style={{color:"#F90"}}>{key}</ListSubheader>
+        {bioList[key].map((value,index)=>(
+          <BioListRow text={value} index={index} handleChange={handleChange} parent_index={parent_index}/>
+        ))}
+        </ul>
+      ))}
     </List>
   );
-}
-
-
-const renderRow = props => {
-  const {text,index,style} = props;
-  console.log({text})
-  return <ListItem key={index} component="div" disablePadding>
+})
+const BioListRow = props => {
+  const {text,index,handleChange,parent_index} = props;
+  //console.log(parent_index)
+  return (<ListItem key={index} component="div" disablePadding>
             <ListItemButton role={undefined} dense>
               <ListItemText>
                     <p style={{color:"#FFF"}}>{text}</p>
@@ -210,14 +219,13 @@ const renderRow = props => {
                     //checked={checked.indexOf(value) !== -1}
                     tabIndex={-1}
                     disableRipple
+                    onChange={()=> handleChange({child_index:index,parent_index:parent_index})}
                     //inputProps={{ 'aria-labelledby': labelId }}
                   />
               </ListItemIcon>
             </ListItemButton>
-          </ListItem>
+          </ListItem>)
 }
-
-
 const From_ProteinID = () => {  
   const navigate = useNavigate();
   const [isLoading,setLoading] = useState(false);
