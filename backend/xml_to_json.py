@@ -2,11 +2,8 @@
 import requests
 from lxml import etree
 import json
-import html
 import sys
-import re
 import time
-import math
 
 def getxmlRoot(target):
     #入力されたアクセッション番号から、起点となるxmlをuniprotから読み込む。
@@ -16,7 +13,7 @@ def getxmlRoot(target):
         return -1
     return etree.fromstring(response.content)
 
-def xmlTojson_fileoutput(target,depth):
+def xmlTojson_fileoutput(target,depth,option):
     start = time.time()
     root = getxmlRoot(target)
     if root == -1:
@@ -26,7 +23,7 @@ def xmlTojson_fileoutput(target,depth):
     dict_ = [{"end_num":"","classes":"pydata","comp":{}},{"group":"nodes","classes":"root","data":{"name":name,"id":target}}]
     #すでに相互作用の関係が検出されたタンパク質を記憶しておく
     completion_dict = {"node_num":0,name:[0]}
-    findInteractaion(root,name,0,dict_,depth,completion_dict,target)
+    findInteractaion(root,name,0,dict_,depth,completion_dict,target,option)
     dict_[0]['comp'] = completion_dict
     print(target + ".json done")
     print(completion_dict)
@@ -61,7 +58,7 @@ def xmlTojson_inp_json(json_file,depth):
         name = dict_[index]['data']['name']
         #completion_dict[name] = []
         completion_dict[name][0] = 0
-        findInteractaion(root,name,0,dict_,int(depth),completion_dict,target)
+        findInteractaion(root,name,0,dict_,int(depth),completion_dict,target,[])
     print(dict_)
     end = time.time()
     print(format(end-start))
@@ -147,59 +144,7 @@ def easyfindInteractaion(root,name,dict_,completion_dict,parent_id,protein_list)
                     completion_dict[child_name] = [1,name,child_name]
                 dict_[0]['end_num'] += str(completion_dict['node_num']) + ','
 
-
-
-# def easy_findInteractaion(root,name,dict_,completion_dict,parent_id,base_positionX,base_positionY):
-#     #type属性がinteractionになっているタグを検出
-    
-#     comment = [com for com in root.findall('entry/comment',root.nsmap) if com.attrib['type'] == 'interaction']
-#     edges_num = 0
-#     #debug用の表示
-#     print(' ',end='')
-#     print('-------parent: ' + name)
-#     unit = 360/len(comment)
-#     angle = 0
-#     for elem in comment:
-#         angle += unit
-#         #interactantには、自分自身のアクセッション番号も記録されている
-#         intactList = [intact for intact in elem.findall('interactant',root.nsmap)]
-#         #intactList[0]には、常に自分自身のアクセッション番号が入っている
-#         intact=intactList[1]
-#         _id = intact.find('id',root.nsmap)
-
-#         #遷移先のタンパク質のxmlファイルを、アクセッション番号(_id.text)から取得する
-#         child_id = _id.text
-#         child_root = getxmlRoot(child_id)
-#         if child_root == -1:
-#             continue
-#         child_name = child_root.find('entry/name',root.nsmap).text
-#         #親と子の名前が一緒ではないなら
-#         if child_name != name:
-#             edges_num = edges_num + 1
-#             #もし解析が完了していないのなら
-#             #completion_dict[name] = []
-#             if child_name not in completion_dict[name]:
-#                 completion_dict['node_num'] += 2
-#                 #子ノードを追加
-#                 position = {
-#                     "x":base_positionX + math.cos(angle)*radius,
-#                     "y":base_positionY + math.sin(angle)*radius,
-#                 }
-#                 node = {"group":"nodes","data":{"name":child_name,"id":child_id},"position":position}
-#                 #親ノードと子ノードを接続
-#                 edges = {"group":"edges","data":{"id":parent_id+ '-' +child_id,"source":parent_id,"target":child_id}}
-#                 #jsonに追加
-#                 dict_ += [node,edges]
-#                 print('  ',end='')
-#                 print(child_name)
-#                 #親ノードを起点とした相互作用関係リストに子ノードの相互関係を追加
-#                 completion_dict[name] += [child_name]
-#                 #完了リストを更新するか？
-#                 if child_name not in completion_dict:
-#                     completion_dict[child_name] = [1,name,child_name]
-#                 dict_[0]['end_num'] += str(completion_dict['node_num']) + ','
-
-def findInteractaion(root,name,n,dict_,depth,completion_dict,parent_id):
+def findInteractaion(root,name,n,dict_,depth,completion_dict,parent_id,option):
     #type属性がinteractionになっているタグを検出
     
     comment = [com for com in root.findall('entry/comment',root.nsmap) if com.attrib['type'] == 'interaction']
@@ -220,6 +165,9 @@ def findInteractaion(root,name,n,dict_,depth,completion_dict,parent_id):
         child_id = _id.text
         child_root = getxmlRoot(child_id)
         if child_root == -1:
+            continue
+        child_common = [nametag for nametag in child_root.findall('entry/organism/name',root.nsmap) if nametag.attrib['type'] == 'common'][0].text
+        if child_common.upper() in option:
             continue
         child_name = child_root.find('entry/name',root.nsmap).text
         #親と子の名前が一緒ではないなら

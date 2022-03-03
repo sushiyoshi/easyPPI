@@ -145,7 +145,7 @@ const BlackOut = () => {
 }
 const bioList =
   {
-    'Mammal':['HUMAN', 'PONPY', 'HYLLA', 'SAGFU', 'MACFA', 'MACMU', 'PANTR', 'HORSE', 'PIG', 'BOVIN', 'CANFA', 'URSAR', 'FELCA', 'PANTI', 'BALMU', 'KOGSI', 'CEPEU', 'ORCOR', 'RABIT', 'MOUSE', 'CRIGR', 'MESAU', 'MACGI', 'SARHA', 'PHACI',],
+    'Mammal':['HUMAN', 'PONPY', 'HYLLA', 'SAGFU', 'MACFA', 'MACMU', 'PANTR', 'HORSE', 'PIG', 'BOVIN', 'CANFA', 'URSAR', 'FELCA', 'PANTI', 'BALMU', 'KOGSI', 'CEPEU', 'ORCOR', 'RABIT', 'MOUSE','RAT', 'CRIGR', 'MESAU', 'MACGI', 'SARHA', 'PHACI',],
     'Reptiles':['LACVV', 'PODMU', 'LACBL', 'IGUIG', 'TERCA', 'CHEMY', 'APAFE', 'ALLMI', 'ALLSI', 'CRONI', 'CAICR', 'BOACO', 'PYTSE', 'OPHHA',],
     'Birds':['CHICK', 'CORBR', 'VIRLA', 'AQUCH', 'APTPA', 'EUDCH',],
     'Amphibian':['XENLA', 'RANNI', 'RANSI',],
@@ -237,11 +237,11 @@ const From_ProteinID = () => {
     setLoading(true)
     const exceptList =  creactExceptList()
     console.log(exceptList)
-    Axios.get('http://127.0.0.1:5000/protein_id',{
-    params:{
-      target:proteinID,
-      depth:depth ? depth : 0,
-    }})
+    Axios.post('http://127.0.0.1:5000/protein_id',{
+      "target":proteinID,
+      "depth":depth ? depth : 0,
+      "option":exceptList
+    })
     .then((response) => {
       setLoading(false)
       if(response.data.state == 0) {

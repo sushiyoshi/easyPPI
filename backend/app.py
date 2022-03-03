@@ -29,19 +29,41 @@ def error_obj(error_id,error_message):
 def index():
     return "graph tool server"
 
-@app.route("/protein_id",methods=['GET'])
+# @app.route("/protein_id",methods=['GET'])
+# def protein_id():
+#     try:
+#         #アクセッション番号
+#         target = request.args.get('target', '')
+#         #深さ
+#         depth = request.args.get('depth', '')
+#         print(target,depth)
+#         elements = xml_to_json.xmlTojson_fileoutput(target,int(depth))
+#         if elements == -1:
+#             error_text = error_obj(2,"Invalid ID")
+#             return make_response(jsonify(error_text))
+#         return make_response(jsonify({"elem":elements,"state":0}))
+#     except Exception as e:
+#         error_text = error_obj(0,str(e))
+#         return make_response(jsonify(error_text))
+
+
+@app.route("/protein_id",methods=['POST'])
 def protein_id():
     try:
-        #アクセッション番号
-        target = request.args.get('target', '')
-        #深さ
-        depth = request.args.get('depth', '')
-        print(target,depth)
-        elements = xml_to_json.xmlTojson_fileoutput(target,int(depth))
-        if elements == -1:
-            error_text = error_obj(2,"Invalid ID")
-            return make_response(jsonify(error_text))
-        return make_response(jsonify({"elem":elements,"state":0}))
+        if request.method == 'POST':
+            req = request.get_json()
+            #アクセッション番号
+            target = req['target']
+            #深さ
+            depth = req['depth']
+            #オプション
+            option = req['option']
+            print(target,depth,option)
+            elements = xml_to_json.xmlTojson_fileoutput(target,int(depth),option)
+            if elements == -1:
+                error_text = error_obj(2,"Invalid ID")
+                return make_response(jsonify(error_text))
+            return make_response(jsonify({"elem":elements,"state":0}))
     except Exception as e:
         error_text = error_obj(0,str(e))
         return make_response(jsonify(error_text))
