@@ -65,7 +65,7 @@ def xmlTojson_inp_json(json_file,depth):
     return json.dumps(dict_,ensure_ascii=True,indent=2)
 
 #def xmlTojson_deep(elem,target):
-def xmlTojson_deep(elem,target):
+def xmlTojson_deep(elem,target,option):
     start = time.time()
     root = getxmlRoot(target)
     if root == -1:
@@ -74,7 +74,7 @@ def xmlTojson_deep(elem,target):
     completion_dict = elem[0]["comp"]
     completion_dict[name][0] = 0
     protein_list = []
-    easyfindInteractaion(root,name,elem,completion_dict,target,protein_list)
+    easyfindInteractaion(root,name,elem,completion_dict,target,protein_list,option)
     #easy_findInteractaion(root,name,elem,completion_dict,target,x,y)
     end = time.time()
     re = [elem,protein_list]
@@ -100,7 +100,7 @@ def getNodeLength(target):
     return len(comment)
  
 
-def easyfindInteractaion(root,name,dict_,completion_dict,parent_id,protein_list):
+def easyfindInteractaion(root,name,dict_,completion_dict,parent_id,protein_list,option):
     #type属性がinteractionになっているタグを検出
     
     comment = [com for com in root.findall('entry/comment',root.nsmap) if com.attrib['type'] == 'interaction']
@@ -122,6 +122,9 @@ def easyfindInteractaion(root,name,dict_,completion_dict,parent_id,protein_list)
         if child_root == -1:
             continue
         child_name = child_root.find('entry/name',root.nsmap).text
+        child_common = child_name.split('_')
+        if child_common[1] and child_common[1] in option:
+            continue
         #親と子の名前が一緒ではないなら
         if child_name != name:
             edges_num = edges_num + 1
@@ -175,7 +178,6 @@ def findInteractaion(root,name,n,dict_,depth,completion_dict,parent_id,option):
         child_common = child_name.split('_')
         if child_common[1] and child_common[1] in option:
             continue
-        print(child_common)
         # if child_common in option:
         #     continue
         #親と子の名前が一緒ではないなら

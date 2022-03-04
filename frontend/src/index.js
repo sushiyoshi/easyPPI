@@ -170,7 +170,7 @@ const Option = React.memo(props => {
         <List
           sx={{
             width: '100%',
-            height:300,
+            height:props.height ? props.height : 300,
             maxWidth: 360,
             bgcolor: 'background.paper',
             overflow: 'auto',
@@ -191,6 +191,18 @@ const Option = React.memo(props => {
     </div>
   );
 })
+const creactExceptList = (bioList,optionList) => {
+  let exceptList = []
+  Object.keys(bioList).forEach((value,parent_index) => {
+    //console.log(bioList[value],optionList[parent_index],optionList[parent_index][0])
+    let array = bioList[value].filter((value,index) => {
+      //console.log(index,optionList[parent_index][index])
+      return optionList[parent_index][index]
+    })
+    exceptList = exceptList.concat(array)
+  })
+  return exceptList;
+}
 const BioListRow = props => {
   const {text,index,handleChange,parent_index,flag} = props;
   //console.log(parent_index)
@@ -199,27 +211,27 @@ const BioListRow = props => {
               <ListItemText>
                     <p style={{color:"#FFF"}}>{text}</p>
               </ListItemText>
-              <ListItemIcon>
-                  <Checkbox
-                    edge="start"
-                    //checked={checked.indexOf(value) !== -1}
-                    disableRipple
-                    checked={flag}
-                    onChange={()=> handleChange({child_index:index,parent_index:parent_index})}
-                    //inputProps={{ 'aria-labelledby': labelId }}
-                  />
-              </ListItemIcon>
+              <ListItem secondaryAction={
+                <Checkbox
+                edge="start"
+                //checked={checked.indexOf(value) !== -1}
+                disableRipple
+                checked={flag}
+                onChange={()=> handleChange({child_index:index,parent_index:parent_index})}
+                //inputProps={{ 'aria-labelledby': labelId }}
+                />
+              } />
             </ListItemButton>
           </ListItem>)
 }
 const From_ProteinID = () => { 
   const navigate = useNavigate();
-  const [isLoading,setLoading] = useState(false);
+  const [isLoading,setLoading] = useState(false)
   const [proteinID,setProteinID] = useState(null)
   const [depth,setDepth] = useState(0)
+  const [ error, setError ] = useState(null)
   const [optionList,setOption] = useState(initialOption)
   const [allCheckList,setAllCheckList] = useState(initialAllCheckList)
-  const [ error, setError ] = useState(null);
   const handleChange = useCallback((props) => {
     const child_index = props.child_index
     const parent_index = props.parent_index
@@ -242,7 +254,7 @@ const From_ProteinID = () => {
   },[depth])
   const onSubmit = () => {
     setLoading(true)
-    const exceptList =  creactExceptList()
+    const exceptList =  creactExceptList(bioList,optionList)
     console.log(exceptList)
     Axios.post('http://127.0.0.1:5000/protein_id',{
       "target":proteinID,
@@ -252,24 +264,12 @@ const From_ProteinID = () => {
     .then((response) => {
       setLoading(false)
       if(response.data.state == 0) {
-        navigate("/graph",{ state:{elements:response.data.elem} });
+        navigate("/graph",{ state:{elements:response.data.elem,option:optionList} });
       }else {
         console.log(response.data.elem);
         setError({data:response.data.elem})
       }
     });
-  }
-  const creactExceptList = () => {
-    let exceptList = []
-    Object.keys(bioList).forEach((value,parent_index) => {
-      //console.log(bioList[value],optionList[parent_index],optionList[parent_index][0])
-      let array = bioList[value].filter((value,index) => {
-        //console.log(index,optionList[parent_index][index])
-        return optionList[parent_index][index]
-      })
-      exceptList = exceptList.concat(array)
-    })
-    return exceptList;
   }
   return(
     <div>
@@ -482,6 +482,21 @@ const GraphPage = () => {
   const elements = JSON.parse(state.elements)
   const protein_name = elements[1].data.name
   const navigate = useNavigate();
+  //console.log(state.option)
+  const [optionList,setOption] = useState(state.option ? state.option : initialOption)
+  const [allCheckList,setAllCheckList] = useState(initialAllCheckList)
+  const handleChange = useCallback((props) => {
+    const child_index = props.child_index
+    const parent_index = props.parent_index
+    setOption(optionList.map( (value ,parent_index_map) =>  parent_index_map == parent_index ? value.map((bool,child_index_map)=>child_index_map==child_index ? !bool : bool) : value))
+  },[optionList])
+  const handleAllCheck = useCallback(parent_index => {
+    setOption(optionList.map( (value ,parent_index_map) =>  {
+      return parent_index_map == parent_index ? value.map((bool)=>!allCheckList[parent_index]) : value
+    }))
+    setAllCheckList(allCheckList.map((value,index) => index==parent_index ? !value : value))
+  },[allCheckList,optionList])
+
   const ref = React.useRef(null);
   //console.log(ref)
   ref.current = proteinInfo
@@ -517,9 +532,12 @@ const GraphPage = () => {
   }
   const handleSendProtein = () => {
     setLoading(true);
+    const exceptList = creactExceptList(bioList,optionList)
+    //console.log(exceptList)
     Axios.post('http://127.0.0.1:5000/deeper_mode',{
       "file":elements,
       "protein_id":proteinInfo.id,
+      "option":exceptList
     }).then(response=>{
       setLoading(false);
       let re = response.data;
@@ -552,6 +570,10 @@ const GraphPage = () => {
       nodeNum={nodeNum}
       isNumberLoading={NumberLoading}
       cautionFlag={nodeNum>20 && !NumberLoading}
+      handleChange={handleChange}
+      handleAllCheck={handleAllCheck}
+      allCheckList={allCheckList}
+      optionList={optionList}
     />
     {isLoading && <BlackOut />}
     {isLoading && <MyLoading />}
@@ -613,6 +635,15 @@ const InformationWindow = props => {
               <IconButton>{props.copyFlag ? <BsClipboardCheck color="secondary"/>: <BsClipboardMinus color="#FF9900"/>}</IconButton>
               </CopyToClipboard>
             </ListItem>
+            <ListItem>
+              <Option
+                handleChange={props.handleChange}
+                handleAllCheck={props.handleAllCheck}
+                allCheckList={props.allCheckList}
+                optionList={props.optionList}
+                height={180}
+              />
+            </ListItem>
             <List>
             </List>
           </List>
@@ -670,7 +701,6 @@ const GraphDrawing = props => {
       // })
       if(props.target) {
         let id = '#' + props.target
-        console.log(id)
         cy.zoomingEnabled()
         cy.zoom({
           level:1.0,

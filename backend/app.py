@@ -76,7 +76,7 @@ def file_mode():
                 error_text = error_obj(2,"file_unspecified")
                 return make_response(jsonify(error_text))
         else:
-            error_text = error_obj(2,abort(400))
+            error_text = error_obj(2,"error")
             return make_response(jsonify(error_text))
     except Exception as e:
         error_text = error_obj(1,str(e))
@@ -90,10 +90,11 @@ def deeper_mode():
             req = request.get_json()
             elem = req['file']
             protein_id = req['protein_id']
+            option = req['option']
             # x = int(req['x'])
             # y = int(req['y'])
             # re = xml_to_json.xmlTojson_deep(elem,protein_id,x,y)
-            re = xml_to_json.xmlTojson_deep(elem,protein_id)
+            re = xml_to_json.xmlTojson_deep(elem,protein_id,option)
             print(re)
             return make_response(jsonify({"elem":json.dumps(re[0],ensure_ascii=True),"protein_list":re[1],"state":0}))
     except Exception as e:
