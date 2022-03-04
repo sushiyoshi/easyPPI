@@ -98,6 +98,7 @@ def getNodeLength(target):
         return -1
     comment = [com for com in root.findall('entry/comment',root.nsmap) if com.attrib['type'] == 'interaction']
     return len(comment)
+ 
 
 def easyfindInteractaion(root,name,dict_,completion_dict,parent_id,protein_list):
     #type属性がinteractionになっているタグを検出
@@ -166,10 +167,17 @@ def findInteractaion(root,name,n,dict_,depth,completion_dict,parent_id,option):
         child_root = getxmlRoot(child_id)
         if child_root == -1:
             continue
-        child_common = [nametag for nametag in child_root.findall('entry/organism/name',root.nsmap) if nametag.attrib['type'] == 'common'][0].text
-        if child_common.upper() in option:
-            continue
+        # child_common = [nametag for nametag in child_root.findall('entry/organism/name',root.nsmap) if nametag.attrib['type'] == 'common'][0].text
+        # if child_common.upper() in option:
+        #     continue
         child_name = child_root.find('entry/name',root.nsmap).text
+
+        child_common = child_name.split('_')
+        if child_common[1] and child_common[1] in option:
+            continue
+        print(child_common)
+        # if child_common in option:
+        #     continue
         #親と子の名前が一緒ではないなら
         if child_name != name:
             edges_num = edges_num + 1
