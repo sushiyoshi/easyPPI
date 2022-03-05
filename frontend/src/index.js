@@ -176,13 +176,30 @@ const Option = React.memo(props => {
             overflow: 'auto',
             '& ul': { padding: 0 },
           }}
-          subheader={<li />}
+          subheader={<li key={'base'}/>}
         >
           {Object.keys(bioList).map((key,parent_index) => (
-            <ul>
+            <ul key={key}>
             <ListSubheader style={{color:"#F90"}}>{key} <Checkbox onChange={()=>props.handleAllCheck(parent_index)}/></ListSubheader>
             {bioList[key].map((value,index)=>(
-              <BioListRow text={value} index={index} handleChange={props.handleChange} parent_index={parent_index} flag={props.optionList[parent_index][index]}/>
+              // <BioListRow text={value} index={index} handleChange={props.handleChange} parent_index={parent_index} flag={props.optionList[parent_index][index]}/>
+                <ListItem key={index.toString()} component="div" disablePadding>
+                  <ListItemButton dense>
+                    <ListItemText>
+                          <p style={{color:"#FFF"}}>{value}</p>
+                    </ListItemText>
+                    <ListItem secondaryAction={
+                      <Checkbox
+                      edge="start"
+                      //checked={checked.indexOf(value) !== -1}
+                      disableRipple
+                      checked={props.optionList[parent_index][index]}
+                      onChange={()=> props.handleChange({child_index:index,parent_index:parent_index})}
+                      //inputProps={{ 'aria-labelledby': labelId }}
+                      />
+                    } />
+                  </ListItemButton>
+                </ListItem>
             ))}
             </ul>
           ))}
@@ -202,27 +219,6 @@ const creactExceptList = (bioList,optionList) => {
     exceptList = exceptList.concat(array)
   })
   return exceptList;
-}
-const BioListRow = props => {
-  const {text,index,handleChange,parent_index,flag} = props;
-  //console.log(parent_index)
-  return (<ListItem key={index} component="div" disablePadding>
-            <ListItemButton role={undefined} dense>
-              <ListItemText>
-                    <p style={{color:"#FFF"}}>{text}</p>
-              </ListItemText>
-              <ListItem secondaryAction={
-                <Checkbox
-                edge="start"
-                //checked={checked.indexOf(value) !== -1}
-                disableRipple
-                checked={flag}
-                onChange={()=> handleChange({child_index:index,parent_index:parent_index})}
-                //inputProps={{ 'aria-labelledby': labelId }}
-                />
-              } />
-            </ListItemButton>
-          </ListItem>)
 }
 const From_ProteinID = () => { 
   const navigate = useNavigate();
@@ -640,18 +636,18 @@ const InformationWindow = props => {
           </List>
         </Box>
         {
-          flag && props.comp && props.comp[props.proteinInfo.name][0] == 1 &&
+          flag && props.comp && props.comp[props.proteinInfo.name] && props.comp[props.proteinInfo.name][0] == 1 &&
           <Stack>
           <Button variant="outlined" disabled={props.isLoading} color="secondary" startIcon={<BsFillLayersFill />} onClick={props.handleSendProtein}>
           <p>Go deeper from current <span style={{fontWeight: 'bold'}}>{props.proteinInfo.name}</span></p>
           </Button>
             <Option
-            handleChange={props.handleChange}
-            handleAllCheck={props.handleAllCheck}
-            allCheckList={props.allCheckList}
-            optionList={props.optionList}
-            height={180}
-          />
+              handleChange={props.handleChange}
+              handleAllCheck={props.handleAllCheck}
+              allCheckList={props.allCheckList}
+              optionList={props.optionList}
+              height={250}
+            />
           </Stack>
         }
       </Stack>
