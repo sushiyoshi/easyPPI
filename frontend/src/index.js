@@ -328,7 +328,7 @@ const InputForms= React.memo(props => {
     <Stack spacing= {2}>
       <TextField 
         error={props.error}
-        helperText={props.error ? props.error.data.error_message:null}
+        helpertext={props.error ? props.error.data.error_message:null}
         disabled={props.isLoading}
         label="Protein ID"
         color="secondary"
@@ -438,7 +438,7 @@ const FileInputForm = props => {
             startIcon={<BsCloudUpload />}
             disabled={props.isLoading}
             error={props.error}
-            helperText={props.error ? props.error.data.error_message:null}
+            helpertext={props.error ? props.error.data.error_message:null}
             >
               Upload JSON
             </Button>
@@ -454,7 +454,7 @@ const FileInputForm = props => {
               }}
               onChange={props.handleDepth}
               error={props.error}
-            helperText={props.error ? props.error.data.error_message:null}
+            helpertext={props.error ? props.error.data.error_message:null}
           />
           {props.cautionFlag ? <p style={{color:"#F90"}}>Caution: May take some time to analyze</p> : <p> </p>}
           <Button 
@@ -479,11 +479,11 @@ const GraphPage = () => {
   const [response,setResponse]=useState(null)
   //console.log(proteinInfo)
   const [copyFlag,setCopyFlag] = useState(false);
-  const elements = JSON.parse(state.elements)
-  const protein_name = elements[1].data.name
+  const elements = state ? JSON.parse(state.elements) : null
+  const protein_name =elements ? elements[1].data.name : null
   const navigate = useNavigate();
   //console.log(state.option)
-  const [optionList,setOption] = useState(state.option ? state.option : initialOption)
+  const [optionList,setOption] = useState(state && state.option ? state.option : initialOption)
   const [allCheckList,setAllCheckList] = useState(initialAllCheckList)
   const handleChange = useCallback((props) => {
     const child_index = props.child_index
@@ -498,7 +498,6 @@ const GraphPage = () => {
   },[allCheckList,optionList])
 
   const ref = React.useRef(null);
-  //console.log(ref)
   ref.current = proteinInfo
   const handleSendFile = () => {
     const blob = new Blob([state.elements], {
@@ -557,19 +556,19 @@ const GraphPage = () => {
     <GraphDrawingMemo elements={elements} 
       handleNodeClick={handleNodeClick} 
       changeFlag={layoutChangeFlag}
-      target={state.target ? state.target : null}
+      target={state && state.target ? state.target : null}
       />
     <InformationWindow 
       handleSendFile={handleSendFile}
       proteinInfo={proteinInfo}
       isLoading={isLoading}
-      comp={elements[0].comp}
+      comp={elements ? elements[0].comp : null}
       handleSendProtein={handleSendProtein}
       handleCopy={handleCopy}
       copyFlag={copyFlag}
       nodeNum={nodeNum}
       isNumberLoading={NumberLoading}
-      cautionFlag={nodeNum>20 && !NumberLoading}
+      cautionFlag={nodeNum>30 && !NumberLoading}
       handleChange={handleChange}
       handleAllCheck={handleAllCheck}
       allCheckList={allCheckList}
@@ -635,24 +634,25 @@ const InformationWindow = props => {
               <IconButton>{props.copyFlag ? <BsClipboardCheck color="secondary"/>: <BsClipboardMinus color="#FF9900"/>}</IconButton>
               </CopyToClipboard>
             </ListItem>
-            <ListItem>
-              <Option
-                handleChange={props.handleChange}
-                handleAllCheck={props.handleAllCheck}
-                allCheckList={props.allCheckList}
-                optionList={props.optionList}
-                height={180}
-              />
-            </ListItem>
+            
             <List>
             </List>
           </List>
         </Box>
         {
-          props.proteinInfo!=null && props.comp[props.proteinInfo.name][0] == 1 &&
+          flag && props.comp && props.comp[props.proteinInfo.name][0] == 1 &&
+          <Stack>
           <Button variant="outlined" disabled={props.isLoading} color="secondary" startIcon={<BsFillLayersFill />} onClick={props.handleSendProtein}>
           <p>Go deeper from current <span style={{fontWeight: 'bold'}}>{props.proteinInfo.name}</span></p>
           </Button>
+            <Option
+            handleChange={props.handleChange}
+            handleAllCheck={props.handleAllCheck}
+            allCheckList={props.allCheckList}
+            optionList={props.optionList}
+            height={180}
+          />
+          </Stack>
         }
       </Stack>
       </Container>
