@@ -357,8 +357,8 @@ const InputForms= React.memo(props => {
   return (
     <Stack spacing= {2}>
       <TextField 
-        error={props.error}
-        helpertext={props.error ? props.error.data.error_message:null}
+        error={props.error != null}
+        helperText={props.error ? props.error.data.error_message : null}
         disabled={props.isLoading}
         label="Protein ID"
         color="secondary"
@@ -467,8 +467,6 @@ const FileInputForm = props => {
             color="secondary"
             startIcon={<BsCloudUpload />}
             disabled={props.isLoading}
-            error={props.error}
-            helpertext={props.error ? props.error.data.error_message:null}
             >
               Upload JSON
             </Button>
@@ -483,8 +481,8 @@ const FileInputForm = props => {
                 shrink: true,
               }}
               onChange={props.handleDepth}
-              error={props.error}
-            helpertext={props.error ? props.error.data.error_message:null}
+              error={props.error != null}
+              helperText={props.error ? props.error.data.error_message:null}
           />
           {props.cautionFlag ? <p style={{color:"#F90"}}>Caution: May take some time to analyze</p> : <p> </p>}
           <Button 
@@ -506,6 +504,7 @@ const GraphPage = () => {
   //const [proteinPosition,setProteinPosition] = useState(null);
   //console.log(useLocation())
   const [proteinInfo,setProteinInfo] = useState(null);
+  const [refFilter,setRefFilter] = useState(null);
   const [response,setResponse]=useState(null)
   //console.log(proteinInfo)
   const [copyFlag,setCopyFlag] = useState(false);
@@ -528,7 +527,7 @@ const GraphPage = () => {
   },[allCheckList,optionList])
 
   const ref = React.useRef(null);
-  ref.current = proteinInfo
+  ref.current = refFilter;
   const handleSendFile = () => {
     const blob = new Blob([state.elements], {
       type: 'application/json'
@@ -539,17 +538,19 @@ const GraphPage = () => {
   const handleNodeClick = obj => {
     setNumberLoading(true);
     setCopyFlag(false)
-    obj.data.communicationID = Math.random()
+    // obj.data.communicationID = Math.random()
+    let newid = Math.random().toString()
+    setRefFilter(newid)
     setProteinInfo(obj.data);
     Axios.get('http://127.0.0.1:5000/getLength',{
     params:{
       target:obj.data.id,
-      ref:obj.data.communicationID
+      ref:newid
     }})
     .then((response) => {
       if(response.data.state == 0) {
         setNodeNum(Number(response.data.elem))
-        if(ref.current.communicationID && ref.current.communicationID==response.data.ref) {
+        if(ref.current && ref.current==response.data.ref) {
           setNodeNum(Number(response.data.elem))
           setNumberLoading(false)
         } else {
@@ -567,14 +568,17 @@ const GraphPage = () => {
     setLoading(true);
     const exceptList = creactExceptList(bioList,optionList)
     //console.log(exceptList)
+    let newid = Math.random().toString()
+    setRefFilter(newid)
     Axios.post('http://127.0.0.1:5000/deeper_mode',{
       "file":elements,
       "protein_id":proteinInfo.id,
-      "option":exceptList
+      "option":exceptList,
+      "ref":newid,
     }).then(response=>{
       setLoading(false);
       let re = response.data;
-      if(re.state == 0) {
+      if(re.state == 0 && ref.current && ref.current==response.data.ref) {
         navigate("/graph",{ state:{elements:re.elem,target:proteinInfo.id} });
         setLayoutChangeFlag(!layoutChangeFlag)
       }else {
