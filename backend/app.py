@@ -108,8 +108,9 @@ def getLength():
             #protein_name = request.form.get("protein_name")
             #アクセッション番号
             target = request.args.get('target', '')
+            ref = request.args.get('ref', '')
             re = xml_to_json.getNodeLength(target)
-            return make_response(jsonify({"elem":re,"state":0,"target":target}))
+            return make_response(jsonify({"elem":re,"state":0,"target":target,"ref":ref}))
     except Exception as e:
         error_text = error_obj(1,str(e))
         return make_response(jsonify(error_text))

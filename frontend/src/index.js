@@ -60,9 +60,45 @@ const Routing = () =>{
           <Route path="/from_protein_id" element={<From_ProteinID />} />
           <Route path="/from_json_file" element={<From_JSONFILE />} />
           <Route path="/graph" element={<GraphPage />} />
+          <Route path="*" element={<Error />} />
         </Routes>
       </AnimatePresence>
   );
+}
+const Error = () => {
+  return(
+    <motion.div
+        animate={{
+          opacity: 1,
+          transition:{
+            delay: 0.5
+          }
+        }}
+        initial={{
+          opacity: 0,
+          
+        }}
+        exit={{
+          opacity: 0,
+        }}
+        transition={{
+          duration: 0.5,
+          
+        }}
+      >
+        <div>
+        <h1 className="center" style={{color:"#FFF"}}>404</h1>
+        <h2 style={{
+          color:"#6aa",
+          "textShadow": "5px 5px 5px #000000",
+          "position": "absolute",
+          "top": "60%",
+          "left": "50%",
+          "transform": "translateY(-50%) translateX(-50%)",
+          }}>Sorry, the page you're looking con not found.</h2>
+        </div>
+      </motion.div>
+  )
 }
 const TopPage = () => {
   return(
@@ -171,7 +207,6 @@ const Option = React.memo(props => {
           sx={{
             width: '100%',
             height:props.height ? props.height : 300,
-            maxWidth: 360,
             bgcolor: 'background.paper',
             overflow: 'auto',
             '& ul': { padding: 0 },
@@ -251,7 +286,6 @@ const From_ProteinID = () => {
   const onSubmit = () => {
     setLoading(true)
     const exceptList =  creactExceptList(bioList,optionList)
-    console.log(exceptList)
     Axios.post('http://127.0.0.1:5000/protein_id',{
       "target":proteinID,
       "depth":depth ? depth : 0,
@@ -262,7 +296,7 @@ const From_ProteinID = () => {
       if(response.data.state == 0) {
         navigate("/graph",{ state:{elements:response.data.elem,option:optionList} });
       }else {
-        console.log(response.data.elem);
+        // console.log(response.data.elem);
         setError({data:response.data.elem})
       }
     });
@@ -505,17 +539,21 @@ const GraphPage = () => {
   const handleNodeClick = obj => {
     setNumberLoading(true);
     setCopyFlag(false)
+    obj.data.communicationID = Math.random()
     setProteinInfo(obj.data);
     Axios.get('http://127.0.0.1:5000/getLength',{
     params:{
       target:obj.data.id,
+      ref:obj.data.communicationID
     }})
     .then((response) => {
       if(response.data.state == 0) {
         setNodeNum(Number(response.data.elem))
-        if(ref.current && ref.current.id==response.data.target) {
+        if(ref.current.communicationID && ref.current.communicationID==response.data.ref) {
           setNodeNum(Number(response.data.elem))
           setNumberLoading(false)
+        } else {
+          console.log('Drop')
         }
       }else {
         console.log(response.data.elem);
